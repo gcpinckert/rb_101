@@ -1,0 +1,80 @@
+1. A method that returns the sum of two integers
+
+CASUAL
+Given two integers:
+
+Validate that the two values are valid integers?
+Save the value of one integer added to the other integer as the sum.
+Return the sum.
+
+FORMAL
+START
+# Given two integers
+int_1 = integer one
+int_2 = integer two
+
+SET sum = int_1 + int_2
+PRINT sum
+END
+
+2. A method that takes an array of strings, and returns a string that is all
+   those strings concatenated together
+
+CASUAL
+Given an array of strings:
+
+Iterate over the collection of strings:
+  - save the first element in the collection as a new variable
+  - for each iteration, add the current element to the variable
+
+After iterating through the collection, return the value of the variable
+
+FORMAL
+START
+# Given an array of strings:
+["string1", "string2", "string3"]
+
+SET iterator = 1
+SET total_strings = value within array of strings at space 1
+
+WHILE iterator <= length of strings array
+  total_strings = total_strings + value of array of strings at space "iterator"
+  iterator = iterator + 1
+
+PRINT total_strings
+END
+
+3. A method that takes an array of integers, and returns a new array with
+   every other element.
+
+CASUAL
+Given an array of integers
+
+Set up a counter variable
+Initialize an empty array variable
+Iterate over the array of integers
+  if the counter variable is odd:
+    - add the array element to the previously initialized empty array
+  otherwise
+    - go to the next iteration
+  Increment the counter variable
+
+After iterating through the whole array, return the array the we initialized
+
+FORMAL
+Given an array of integers
+[num1, num2, num3, num4]
+
+SET iterator = 1
+SET new_array = empty array
+
+WHILE iterator < = length of integers array
+  if iterator is odd
+    new_array = new_array + value in integers array at space "iterator"
+  else (iterator is even)
+    go to next iteration
+  
+  iterator = iterator + 1
+
+PRINT new_arrayE
+END
