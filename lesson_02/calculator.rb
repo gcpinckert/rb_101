@@ -1,7 +1,5 @@
-# ask the user for two numbers:
-# ask the user for operation to perform
-# perform the operation on the two numbers
-# output the result
+require 'yaml'
+MESSAGES = YAML.load_file('calculator_messages.yml')
 
 def prompt(message)
   puts "=> #{message}"
@@ -31,14 +29,14 @@ def operation_to_message(op)
   word
 end
 
-prompt "Welcome to Calculator! Enter your name:"
+prompt(MESSAGES['welcome'])
 
 name = ''
 loop do
   name = gets.chomp
 
   if name.empty?
-    prompt "Make sure to use a valid name."
+    prompt(MESSAGES['valid_name'])
   else
     break
   end
@@ -47,27 +45,27 @@ end
 prompt "Hi, #{name}!"
 
 loop do
-  num1 = '' # initialize outside loop to have outer scope
+  num1 = ''
   loop do
-    prompt "What's the first number?"
+    prompt(MESSAGES['first_num'])
     num1 = gets.chomp
 
     if valid_number?(num1)
       break
     else
-      prompt "Invalid number" # error message
+      prompt(MESSAGES['invalid_num'])
     end
   end
 
   num2 = ''
   loop do
-    prompt "What's the second number?"
+    prompt(MESSAGES['second_num'])
     num2 = gets.chomp
 
     if valid_number?(num2)
       break
     else
-      prompt "Invalid number"
+      prompt(MESSAGES['invalid_num'])
     end
   end
 
@@ -88,7 +86,7 @@ loop do
     if %w(1 2 3 4).include?(operator)
       break
     else
-      prompt "Must choose 1, 2, 3, or 4"
+      prompt(MESSAGES['valid_operator'])
     end
   end
 
@@ -103,9 +101,9 @@ loop do
 
   prompt "The result is #{result}."
 
-  prompt "Do you want to perform another calculation? (Y to go again)"
+  prompt(MESSAGES['again'])
   answer = gets.chomp
   break unless answer.downcase.start_with?('y')
 end
 
-prompt "Thank you for using the calculator. Goodbye."
+prompt(MESSAGES['goodbye'])
