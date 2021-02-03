@@ -8,7 +8,13 @@ def prompt(message)
 end
 
 def valid_number?(number)
-  number.to_i.to_s == number
+  if number.to_i.to_s == number
+    true
+  elsif number.to_f.to_s == number
+    true
+  else
+    false
+  end
 end
 
 def operation_to_message(op)
