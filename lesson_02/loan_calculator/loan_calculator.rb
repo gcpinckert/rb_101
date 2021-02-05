@@ -2,28 +2,59 @@ def prompt(message)
   puts "==> #{message}"
 end
 
+def valid_loan_amount
+  loop do
+    # Get input from user: loan amount
+    prompt("What is the loan amount?")
+    loan_amount = gets.chomp
+
+    # Validate input: Valid floats between 1 and 1,000,000 inclusive
+    unless (loan_amount.to_f.to_s == loan_amount) && (loan_amount.to_f > 0) && (loan_amount.to_f <= 1000000)
+      prompt("I'm sorry, that's not a valid amount. Please enter a number between 1 and 1,000,000.")
+      next
+    else
+      return loan_amount.to_f
+    end
+  end
+end
+
+def valid_annual_interest
+  loop do
+    # Get input from user: APR
+    prompt("What is the APR?")
+    annual_interest = gets.chomp
+
+    # Validate input: Valid floats between 0 and 99 inclusive
+    unless (annual_interest.to_f.to_s == annual_interest) && (annual_interest >= 0) && (annual_interest < 100)
+      prompt("I'm sorry that's not a valid APR. Please enter a number between 0 and 99.")
+      next
+    else
+      return annual_interest.to_f / 100
+  end
+end
+
+def valid_loan_years
+  loop do
+    # Get input from user: loan duration (years)
+    prompt("How many years is the duration of your loan?")
+    loan_years = gets.chomp
+
+    # Validate input: Valid integers between 1 and 30 inclusive
+    unless (loan_years.to_i.to_s == loan_years) && (loan_years > 0) && (loan_years < 31)
+      prompt("I'm sorry that's not a valid duration. Please enter a whole number between 1 and 30.")
+    else
+      return loan_years.to_i
+  end
+end
+
 # Display welcome message
 prompt("Hi! Welcome to the Loan Calculator!")
 
 # While user wants to keep calculating
 loop do
-  # Get input from user: loan amount
-  prompt("What is the loan amount?")
-  loan_amount = gets.chomp
-    # Validate input: Valid floats between 1 and 1,000,000 inclusive
-  loan_amount = loan_amount.to_f
-
-  # Get input from user: APR
-  prompt("What is the APR?")
-  annual_interest = gets.chomp
-    # Validate input: Valid floats between 0 and 100 inclusive
-  annual_interest = annual_interest.to_f / 100
-
-  # Get input from user: loan duration (years)
-  prompt("What is the duration of the loan in years?")
-  loan_years = gets.chomp
-    # Validate input: Valid integers between 1 and 30 inclusive
-  loan_years = loan_years.to_i
+  loan_amount = valid_loan_amount
+  annual_interest = valid_annual_interest
+  loan_years = valid_loan_years
 
   # Calculate monthly interest rate
   monthly_interest = annual_interest / 12
