@@ -2,7 +2,7 @@ def prompt(message)
   puts "==> #{message}"
 end
 
-# Input and input validation methods: 
+# Input and input validation methods:
 
 def float?(input_string)
   /\d/.match(input_string) && /^-?\d\.?\d*$/.match(input_string)
@@ -18,7 +18,7 @@ def valid_loan_amount
         (loan_amount.to_f <= 2000000)
       return loan_amount.to_f
     else
-      prompt("I'm sorry, that's not a valid amount. Please enter a number "\
+      prompt("I'm sorry, that's not a valid amount. Please enter a number " \
               "between 1 and 2,000,000.")
     end
   end
@@ -56,7 +56,7 @@ def valid_loan_years
   end
 end
 
-# Calculation methods: 
+# Calculation methods:
 
 def calc_monthly_interest(annual_interest)
   annual_interest / 12
@@ -118,8 +118,8 @@ loop do
   total_interest = calc_total_interest(total_payment, loan_amount)
 
   prompt("Your monthly payment is: $#{format('%.2f', monthly_payment)}")
-  prompt("Your total payment is $#{format('%.2f', total_payment)} for a period of " \
-          "#{loan_months} months.")
+  prompt("Your total payment is $#{format('%.2f', total_payment)} for a " \
+          "period of #{loan_months} months.")
   prompt("Your total interest will be: $#{format('%.2f', total_interest)}")
 
   break if calc_again? == false
