@@ -2,35 +2,33 @@ def prompt(message)
   puts "==> #{message}"
 end
 
+# Input and input validation methods: 
+
 def float?(input_string)
   /\d/.match(input_string) && /^-?\d\.?\d*$/.match(input_string)
 end
 
 def valid_loan_amount
   loop do
-    # Get input from user: loan amount
     prompt("What is the loan amount?")
     loan_amount = gets.chomp
 
-    # Validate input: Valid floats between 1 and 1,000,000 inclusive
     if  float?(loan_amount) &&
         (loan_amount.to_f > 0) &&
-        (loan_amount.to_f <= 1000000)
+        (loan_amount.to_f <= 2000000)
       return loan_amount.to_f
     else
       prompt("I'm sorry, that's not a valid amount. Please enter a number "\
-              "between 1 and 1,000,000.")
+              "between 1 and 2,000,000.")
     end
   end
 end
 
 def valid_annual_interest
   loop do
-    # Get input from user: APR
-    prompt("What is the APR?")
+    prompt("What is the Annual Percentage Rate (APR?)")
     annual_interest = gets.chomp
 
-    # Validate input: Valid floats between 0 and 99 inclusive
     if  float?(annual_interest) &&
         (annual_interest.to_f >= 0) &&
         (annual_interest.to_f < 100)
@@ -44,11 +42,9 @@ end
 
 def valid_loan_years
   loop do
-    # Get input from user: loan duration (years)
     prompt("How many years is the duration of your loan?")
     loan_years = gets.chomp
 
-    # Validate input: Valid integers between 1 and 30 inclusive
     if  (loan_years.to_i.to_s == loan_years) &&
         (loan_years.to_i > 0) &&
         (loan_years.to_i < 31)
@@ -59,6 +55,8 @@ def valid_loan_years
     end
   end
 end
+
+# Calculation methods: 
 
 def calc_monthly_interest(annual_interest)
   annual_interest / 12
@@ -86,6 +84,8 @@ def calc_total_interest(total_payment, loan_amount)
   total_payment - loan_amount
 end
 
+# Check if the user wants to go again
+
 def calc_again?
   loop do
     prompt("Would you like to make another calculation? (Y or N)")
@@ -100,10 +100,10 @@ def calc_again?
   end
 end
 
-# Display welcome message
+# Main program
+
 prompt("Hi! Welcome to the Loan Calculator!")
 
-# While user wants to keep calculating
 loop do
   loan_amount = valid_loan_amount
   annual_interest = valid_annual_interest
@@ -117,15 +117,12 @@ loop do
   total_payment = calc_total_payment(monthly_payment, loan_months)
   total_interest = calc_total_interest(total_payment, loan_amount)
 
-  # Display results
-  prompt("Your monthly payment is #{monthly_payment.round(2)}")
-  prompt("Your total payment is #{total_payment.round(2)} for a period of " \
+  prompt("Your monthly payment is: $#{format('%.2f', monthly_payment)}")
+  prompt("Your total payment is $#{format('%.2f', total_payment)} for a period of " \
           "#{loan_months} months.")
-  prompt("Your total interest will be #{total_interest.round(2)}")
+  prompt("Your total interest will be: $#{format('%.2f', total_interest)}")
 
-  # Ask user if they want to go again?
   break if calc_again? == false
 end
 
-# Display goodbye message
 prompt("Thank you for using the Loan Calculator! Goodbye!")
