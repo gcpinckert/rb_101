@@ -4,7 +4,12 @@ def prompt(message)
   puts "==> #{message}"
 end
 
+def render_ascii_art(filename)
+  File.foreach(filename) { |line| puts line }
+end
+
 def display_welcome
+  render_ascii_art("banner_art.txt")
   prompt "Hi! Welcome to the Loan Calculator!"
 end
 
