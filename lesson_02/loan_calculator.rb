@@ -1,5 +1,28 @@
+# Output methods
+
 def prompt(message)
   puts "==> #{message}"
+end
+
+def display_welcome
+  prompt "Hi! Welcome to the Loan Calculator!"
+end
+
+def display_goodbye
+  prompt "Thank you for using the Loan Calculator! Goodbye!"
+end
+
+def display_monthly_payment(monthly_payment)
+  prompt("Your monthly payment is: $#{format('%.2f', monthly_payment)}")
+end
+
+def display_total_payment(total_payment, loan_months)
+  prompt("Your total payment is $#{format('%.2f', total_payment)} for a " \
+          "period of #{loan_months} months.")
+end
+
+def display_total_interest(total_interest)
+  prompt("Your total interest will be: $#{format('%.2f', total_interest)}")
 end
 
 # Input and input validation methods:
@@ -100,14 +123,22 @@ def calc_again?
   end
 end
 
-# Main program
+# Clear screen before and between calculations
+def clear_screen
+  system('clear') || system('cls')
+end
 
-prompt("Hi! Welcome to the Loan Calculator!")
+# Main program
+clear_screen
+
+display_welcome
 
 loop do
   loan_amount = valid_loan_amount
   annual_interest = valid_annual_interest
   loan_years = valid_loan_years
+
+  clear_screen
 
   monthly_interest = calc_monthly_interest(annual_interest)
   loan_months = calc_loan_months(loan_years)
@@ -117,12 +148,12 @@ loop do
   total_payment = calc_total_payment(monthly_payment, loan_months)
   total_interest = calc_total_interest(total_payment, loan_amount)
 
-  prompt("Your monthly payment is: $#{format('%.2f', monthly_payment)}")
-  prompt("Your total payment is $#{format('%.2f', total_payment)} for a " \
-          "period of #{loan_months} months.")
-  prompt("Your total interest will be: $#{format('%.2f', total_interest)}")
+  display_monthly_payment(monthly_payment)
+  display_total_payment(total_payment, loan_months)
+  display_total_interest(total_interest)
 
-  break if calc_again? == false
+  break unless calc_again?
+  clear_screen
 end
 
-prompt("Thank you for using the Loan Calculator! Goodbye!")
+display_goodbye
