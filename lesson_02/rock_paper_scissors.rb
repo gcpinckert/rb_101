@@ -1,4 +1,8 @@
-VALID_CHOICES = %w(rock paper scissors lizard spock)
+VALID_CHOICES = { 'r' => 'rock',
+                  'p' => 'paper',
+                  's' => 'scissors',
+                  'l' => 'lizard',
+                  'sp' => 'spock' }
 
 def clear_screen
   system('clear') || system('cls')
@@ -10,16 +14,19 @@ end
 
 def display_welcome
   clear_screen
-  prompt "It's time to play #{VALID_CHOICES.join(' ').upcase}!"
+  prompt "It's time to play #{VALID_CHOICES.values.join(' ').upcase}!"
 end
 
 def get_player_choice
   loop do
-    prompt "Choose one: #{VALID_CHOICES.join(', ')}"
-    choice = gets.chomp
+    prompt "Choose one: #{VALID_CHOICES.values.join(', ')}"
+    VALID_CHOICES.each do |abbreviation, full_name|
+      prompt "To choose #{full_name.upcase} enter '#{abbreviation}'"
+    end
+    choice = gets.chomp.downcase
 
-    if VALID_CHOICES.include?(choice)
-      return choice
+    if VALID_CHOICES.keys.include?(choice) 
+      return VALID_CHOICES[choice]
     else
       prompt "That's not a valid choice."
     end
@@ -34,7 +41,7 @@ end
 def win?(first, second)
   winning_moves = { scissors: %w(paper lizard),
                     rock: %w(lizard scissors),
-                    paper: %w(rock scissors),
+                    paper: %w(rock spock),
                     lizard: %w(paper spock),
                     spock: %w(rock scissors) }
   key = first.to_sym
@@ -65,7 +72,7 @@ display_welcome
 
 loop do
   player_choice = get_player_choice
-  computer_choice = VALID_CHOICES.sample
+  computer_choice = VALID_CHOICES.values.sample
 
   display_choices(player_choice, computer_choice)
   display_result(player_choice, computer_choice)
