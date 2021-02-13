@@ -25,7 +25,7 @@ def get_player_choice
     end
     choice = gets.chomp.downcase
 
-    if VALID_CHOICES.keys.include?(choice) 
+    if VALID_CHOICES.keys.include?(choice)
       return VALID_CHOICES[choice]
     else
       prompt "That's not a valid choice."
@@ -99,7 +99,9 @@ loop do
   display_result(player_choice, computer_choice)
 
   player_score = calc_player_score(player_choice, computer_choice, player_score)
-  computer_score = calc_computer_score(computer_choice, player_choice, computer_score)
+  computer_score = calc_computer_score  computer_choice,
+                                        player_choice,
+                                        computer_score
   display_score(player_score, computer_score)
 
   break unless play_again?
