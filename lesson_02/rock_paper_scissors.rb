@@ -38,14 +38,14 @@ def display_choices(choice1, choice2)
   prompt "Computer chose: #{choice2}"
 end
 
-def win?(first, second)
+def win?(player1, player2)
   winning_moves = { scissors: %w(paper lizard),
                     rock: %w(lizard scissors),
                     paper: %w(rock spock),
                     lizard: %w(paper spock),
                     spock: %w(rock scissors) }
-  key = first.to_sym
-  winning_moves[key].include?(second)
+  key = player1.to_sym
+  winning_moves[key].include?(player2)
 end
 
 def display_result(player, computer)
@@ -56,6 +56,24 @@ def display_result(player, computer)
   else
     prompt "It's a tie!"
   end
+end
+
+def calc_player_score(player_move, computer_move, player_score)
+  if win?(player_move, computer_move)
+    player_score += 1
+  end
+  player_score
+end
+
+def calc_computer_score(computer_move, player_move, computer_score)
+  if win?(computer_move, player_move)
+    computer_score += 1
+  end
+  computer_score
+end
+
+def display_score(player_score, computer_score)
+  prompt "You: #{player_score} Computer: #{computer_score}"
 end
 
 def play_again?
@@ -70,12 +88,19 @@ end
 
 display_welcome
 
+player_score = 0
+computer_score = 0
+
 loop do
   player_choice = get_player_choice
   computer_choice = VALID_CHOICES.values.sample
 
   display_choices(player_choice, computer_choice)
   display_result(player_choice, computer_choice)
+
+  player_score = calc_player_score(player_choice, computer_choice, player_score)
+  computer_score = calc_computer_score(computer_choice, player_choice, computer_score)
+  display_score(player_score, computer_score)
 
   break unless play_again?
   clear_screen
