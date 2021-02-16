@@ -56,6 +56,8 @@ def display_result(player, computer)
   else
     prompt "It's a tie!"
   end
+  sleep(2)
+  clear_screen
 end
 
 def calc_player_score(player_move, computer_move, player_score)
@@ -74,6 +76,18 @@ end
 
 def display_score(player_score, computer_score)
   prompt "You: #{player_score} Computer: #{computer_score}"
+end
+
+def tournament_over?(player_score, computer_score)
+  player_score == 5 || computer_score == 5
+end
+
+def display_winner(player_score, computer_score)
+  if player_score > computer_score
+    prompt "Congratulations! You beat the computer! You are Grand Champion!"
+  else
+    prompt "Awww, Computer has beat you. Computer is the Grand Champion!"
+  end
 end
 
 def play_again?
@@ -95,6 +109,8 @@ loop do
   player_choice = get_player_choice
   computer_choice = VALID_CHOICES.values.sample
 
+  clear_screen
+
   display_choices(player_choice, computer_choice)
   display_result(player_choice, computer_choice)
 
@@ -104,7 +120,12 @@ loop do
                                         computer_score
   display_score(player_score, computer_score)
 
+  next unless tournament_over?(player_score, computer_score)
+  display_winner(player_score, computer_score)
+
   break unless play_again?
+  player_score = 0
+  computer_score = 0
   clear_screen
 end
 
