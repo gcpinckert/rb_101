@@ -1,8 +1,10 @@
 VALID_CHOICES = { 'r' => 'rock',
                   'p' => 'paper',
-                  's' => 'scissors',
+                  'sc' => 'scissors',
                   'l' => 'lizard',
                   'sp' => 'spock' }
+
+GOAL_WINS = 5
 
 def clear_screen
   system('clear') || system('cls')
@@ -15,6 +17,7 @@ end
 def display_welcome
   clear_screen
   prompt "It's time to play #{VALID_CHOICES.values.join(' ').upcase}!"
+  prompt "The first player to reach #{GOAL_WINS.to_s} wins is Grand Champion!"
 end
 
 def get_player_choice
@@ -33,9 +36,8 @@ def get_player_choice
   end
 end
 
-def display_choices(choice1, choice2)
-  prompt "You chose: #{choice1}"
-  prompt "Computer chose: #{choice2}"
+def display_choices(choices)
+  choices.each { |name, choice| prompt "#{name.capitalize} chose: #{choice}" }
 end
 
 def win?(player1, player2)
@@ -44,14 +46,13 @@ def win?(player1, player2)
                     paper: %w(rock spock),
                     lizard: %w(paper spock),
                     spock: %w(rock scissors) }
-  key = player1.to_sym
-  winning_moves[key].include?(player2)
+  winning_moves[player1.to_sym].include?(player2)
 end
 
-def display_result(player, computer)
-  if win?(player, computer)
+def display_result(choices)
+  if win?(choices[:player], choices[:computer])
     prompt "You won!"
-  elsif win?(computer, player)
+  elsif win?(choices[:computer], choices[:player])
     prompt "Computer won!"
   else
     prompt "It's a tie!"
@@ -60,30 +61,30 @@ def display_result(player, computer)
   clear_screen
 end
 
-def calc_player_score(player_move, computer_move, player_score)
-  if win?(player_move, computer_move)
-    player_score += 1
+def calc_player_score(choices, scores)
+  if win?(choices[:player], choices[:computer])
+    scores[:player] += 1
   end
-  player_score
+  scores[:player]
 end
 
-def calc_computer_score(computer_move, player_move, computer_score)
-  if win?(computer_move, player_move)
-    computer_score += 1
+def calc_computer_score(choices, scores)
+  if win?(choices[:computer], choices[:player])
+    scores[:computer] += 1
   end
-  computer_score
+  scores[:computer]
 end
 
-def display_score(player_score, computer_score)
-  prompt "You: #{player_score} Computer: #{computer_score}"
+def display_score(scores)
+  prompt "You: #{scores[:player]} Computer: #{scores[:computer]}"
 end
 
-def tournament_over?(player_score, computer_score)
-  player_score == 5 || computer_score == 5
+def tournament_over?(scores)
+  scores[:player] == GOAL_WINS || scores[:computer] == GOAL_WINS
 end
 
-def display_winner(player_score, computer_score)
-  if player_score > computer_score
+def display_winner(scores)
+  if scores[:player] > scores[:computer]
     prompt "Congratulations! You beat the computer! You are Grand Champion!"
   else
     prompt "Awww, Computer has beat you. Computer is the Grand Champion!"
@@ -91,9 +92,15 @@ def display_winner(player_score, computer_score)
 end
 
 def play_again?
-  prompt "Do you want to play again? (Enter 'y' to keep playing)"
-  answer = gets.chomp
-  answer.downcase == 'y'
+  loop do
+    prompt "Do you want to play again? (Enter 'y' to keep playing, 'n' to quit)"
+    answer = gets.chomp
+    if ['y', 'n'].include?(answer.downcase)
+      return answer.downcase == 'y'
+    else
+      prompt "I'm sorry that's not a valid input. Please enter 'y' or 'n'."
+    end
+  end
 end
 
 def display_goodbye
@@ -102,30 +109,27 @@ end
 
 display_welcome
 
-player_score = 0
-computer_score = 0
+scores = {player: 0, computer: 0}
+choices = {player: '', computer: ''}
 
 loop do
-  player_choice = get_player_choice
-  computer_choice = VALID_CHOICES.values.sample
+  choices[:player] = get_player_choice
+  choices[:computer] = VALID_CHOICES.values.sample
 
   clear_screen
 
-  display_choices(player_choice, computer_choice)
-  display_result(player_choice, computer_choice)
+  display_choices(choices)
+  display_result(choices)
 
-  player_score = calc_player_score(player_choice, computer_choice, player_score)
-  computer_score = calc_computer_score  computer_choice,
-                                        player_choice,
-                                        computer_score
-  display_score(player_score, computer_score)
+  scores[:player] = calc_player_score(choices, scores)
+  scores[:computer] = calc_computer_score(choices, scores)
+  display_score(scores)
 
-  next unless tournament_over?(player_score, computer_score)
-  display_winner(player_score, computer_score)
+  next unless tournament_over?(scores)
+  display_winner(scores)
 
   break unless play_again?
-  player_score = 0
-  computer_score = 0
+  scores = {player: 0, computer: 0}
   clear_screen
 end
 
