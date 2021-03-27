@@ -88,3 +88,5 @@ You then re-enable that particular cop again after the section of code that you 
 Additionally, you can disable / enable as many cops as need be with a single comment.
 
 `# rubocop:disable <NameOfCop>, <AnotherCop>`
+
+Remember, at the end of the day Rubocop should be taken as advisement not law.

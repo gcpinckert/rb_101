@@ -25,7 +25,7 @@ def display_welcome
     prompt "Your goal: beat the Tic-Tac-Toeminator."
     prompt "Get three X's in a row, horizontal, vertical, or diagonal."
     prompt "Are you ready to save humanity from the tyranny of the O's?"
-    prompt "Press 'y' to begin!"
+    prompt "Enter 'y' to begin!"
     answer = gets.chomp.downcase
     break if answer == 'y'
   end
@@ -65,11 +65,22 @@ def empty_squares(brd)
   brd.keys.select { |num| brd[num] == INITIAL_MARKER }
 end
 
+def joinor(array, punctuation = ', ', conjunction = 'or')
+  case array.length
+  when 0 then ''
+  when 1 then array[0].to_s
+  when 2 then "#{array[0]} #{conjunction} #{array[1]}"
+  else
+    array[0..-2].join(punctuation) +
+      "#{punctuation}#{conjunction} #{array[-1]}"
+  end
+end
+
 # Player's turn
 def player_places_piece!(brd)
   square = ''
   loop do
-    prompt "Choose a square (#{empty_squares(brd).join(', ')}):"
+    prompt "Choose a square (#{joinor(empty_squares(brd))}):"
     square = gets.chomp.to_i
     if empty_squares(brd).include?(square)
       break
