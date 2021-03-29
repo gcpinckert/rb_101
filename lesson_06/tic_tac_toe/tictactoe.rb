@@ -5,8 +5,9 @@ WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
                 [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # columns
                 [[1, 5, 9], [3, 5, 7]]              # diagonals
 
-def prompt(msg)
+def prompt_pause(msg)
   puts "=> #{msg}"
+  sleep(1.5)
 end
 
 # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
@@ -21,21 +22,24 @@ def display_welcome
     puts "  |_| |_|\\___|   |_|\\__,_|\\___|   |_|\\___/ \\___|"
     puts ""
     puts ""
-    prompt "Welcome to Tic Tac Toe!"
-    prompt "Your goal: beat the Tic-Tac-Toeminator."
-    prompt "Get three X's in a row, horizontal, vertical, or diagonal."
-    prompt "Are you ready to save humanity from the tyranny of the O's?"
-    prompt "Enter 'y' to begin!"
+    prompt_pause "Welcome to Tic Tac Toe!"
+    prompt_pause "Your goal: beat the Tic-Tac-Toeminator."
+    prompt_pause "Get three X's in a row, horizontal, vertical, or diagonal."
+    prompt_pause "The first player to win five games achieves ultimate victory."
+    prompt_pause "Are you ready to save humanity from the tyranny of the O's?"
+    prompt_pause "Enter 'y' to begin!"
     answer = gets.chomp.downcase
     break if answer == 'y'
   end
 end
 # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
-# rubocop:disable Metrics/AbcSize
-def display_board(brd)
+# rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+def display_board(brd, scores)
   system 'clear'
   puts "You are #{PLAYER_MARKER}. Tic-Tac-Toeminator is #{COMPUTER_MARKER}."
+  puts "Score: You - #{scores['Player']}" \
+       " Tic-Tac-Toeminator - #{scores['Tic-Tac-Toeminator']}"
   puts ""
   puts "     |     |"
   puts "  #{brd[1]}  |  #{brd[2]}  |  #{brd[3]}"
@@ -50,7 +54,7 @@ def display_board(brd)
   puts "     |     |"
   puts ""
 end
-# rubocop:enable Metrics/AbcSize
+# rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
 # Generates hash in which key is a integer representing square on the board
 # Value tells what to display in the board when output (X, O, or blank square)
@@ -80,12 +84,12 @@ end
 def player_places_piece!(brd)
   square = ''
   loop do
-    prompt "Choose a square (#{joinor(empty_squares(brd))}):"
+    prompt_pause "Choose a square (#{joinor(empty_squares(brd))}):"
     square = gets.chomp.to_i
     if empty_squares(brd).include?(square)
       break
     else
-      prompt "Sorry, that's not a valid choice"
+      prompt_pause "Sorry, that's not a valid choice"
     end
   end
 
@@ -112,7 +116,7 @@ end
 def detect_winner(brd)
   WINNING_LINES.each do |line|
     if brd.values_at(*line).count(PLAYER_MARKER) == 3
-      return "You"
+      return "Player"
     elsif brd.values_at(*line).count(COMPUTER_MARKER) == 3
       return "Tic-Tac-Toeminator"
     end
@@ -121,44 +125,83 @@ def detect_winner(brd)
   nil
 end
 
-def turn_cycle(brd)
+def turn_cycle(brd, scores)
   loop do
-    display_board(brd)
+    display_board(brd, scores)
     player_places_piece!(brd)
     break if someone_won?(brd) || board_full?(brd)
     computer_places_piece!(brd)
     break if someone_won?(brd) || board_full?(brd)
   end
 
-  display_board(brd)
+  display_board(brd, scores)
 end
 
-def game_over(brd)
+def game_over(brd, scores)
   if someone_won?(brd)
-    prompt "#{detect_winner(brd)} won!"
+    scores[detect_winner(brd)] += 1
+    prompt_pause "#{detect_winner(brd)} won!"
   else
-    prompt "It's a tie!"
+    prompt_pause "It's a tie!"
   end
+  prompt_pause "Score is now: Player - #{scores['Player']}" \
+               " Tic-Tac-Toeminator - #{scores['Tic-Tac-Toeminator']}."
 end
 
-def play_game
+def play_game(scores)
   loop do
     board = initialize_board
 
-    turn_cycle(board)
-    game_over(board)
+    turn_cycle(board, scores)
+    game_over(board, scores)
 
-    prompt "Play again? (y or n)"
+    break if tournament_over?(scores)
+  end
+end
+
+def tournament_over?(scores)
+  scores["Player"] >= 5 || scores["Tic-Tac-Toeminator"] >= 5
+end
+
+def play_tournament
+  loop do
+    scores = { "Player" => 0, "Tic-Tac-Toeminator" => 0 }
+    play_game(scores)
+
+    display_tournament_winner(scores)
+
+    prompt_pause "Play again? (y or n)"
     answer = gets.chomp
     break unless answer.downcase.start_with?('y')
   end
 end
 
+# rubocop:disable Metrics/MethodLength
+def display_tournament_winner(scores)
+  system 'clear'
+  puts ""
+  if scores["Player"] < scores["Tic-Tac-Toeminator"]
+    puts "  ____                         ___"
+    puts " / ___| __ _ _ __ ___   ___   / _ \\__   _____ _ __"
+    puts "| |  _ / _` | '_ ` _ \\ / _ \\ | | | \\ \\ / / _ \\ '__|"
+    puts "| |_| | (_| | | | | | |  __/ | |_| |\\ V /  __/ |"
+    puts " \\____|\\__,_|_| |_| |_|\\___|  \\___/  \\_/ \\___|_|"
+  else
+    puts "__   __           __        ___       _"
+    puts "\\ \\ / /__  _   _  \\ \\      / (_)_ __ | |"
+    puts " \\ V / _ \\| | | |  \\ \\ /\\ / /| | '_ \\| |"
+    puts "  | | (_) | |_| |   \\ V  V / | | | | |_|"
+    puts "  |_|\\___/ \\__,_|    \\_/\\_/  |_|_| |_(_)"
+  end
+  puts ""
+end
+# rubocop: enable Metrics/MethodLength
+
 def display_goodbye
-  prompt "Thanks, hero, for your daring deeds!"
-  prompt "Goodbye until the Tic-Tac-Toeminator strikes again!"
+  prompt_pause "Thanks hero, for your daring deeds!"
+  prompt_pause "Goodbye until the Tic-Tac-Toeminator strikes again!"
 end
 
 display_welcome
-play_game
+play_tournament
 display_goodbye
