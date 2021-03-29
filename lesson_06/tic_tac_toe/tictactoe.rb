@@ -96,10 +96,29 @@ def player_places_piece!(brd)
   brd[square] = PLAYER_MARKER
 end
 
-# Computer's turn: random
+# Computer's turn:
 def computer_places_piece!(brd)
-  square = empty_squares(brd).sample
+  square = nil
+
+  # Defensive move if necessary
+  WINNING_LINES.each do |line|
+    square = defensive_computer_move(line, brd)
+    break if square
+  end
+
+  # Random move if defense not necessary
+  if !square # i.e. if square still references `nil`
+    square = empty_squares(brd).sample
+  end
+
   brd[square] = COMPUTER_MARKER
+end
+
+def defensive_computer_move(line, brd)
+  if brd.values_at(*line).count(PLAYER_MARKER) == 2 &&
+     brd.values_at(*line).count(INITIAL_MARKER) == 1
+    line.find { |sq| brd[sq] == INITIAL_MARKER }
+  end
 end
 
 # Determines if there is a tie

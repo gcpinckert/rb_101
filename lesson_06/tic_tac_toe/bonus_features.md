@@ -71,3 +71,28 @@ Keep score of how many games both the player and the computer has won. Make game
 7. Display a message for the "ultimate victory"
 8. Ask player if they want to play again outside the `play_game` loop but it is the break condition for the larger `play_tournament` loop
 9. Add a line to the `display_welcome` message explaining the first-to-five tournament rules
+
+## Computer AI: Defense
+
+### Problem
+
+Make the computer defensive minded. If there is an immediate threat (i.e. if there are 2 squares marked by the player in a row), the computer should defensively mark the 3rd square. If there is no immediate threat, then it will just pick a random square.
+
+### Rules
+
+1. If 2 squares are marked by the player (opponent) in any winning row, the computer should mark the last square in that winning row.
+2. Otherwise, the computer will choose a square to mark randomly.
+
+### Algorithm / Data Structure
+
+1. Assign `square` the value of `nil`. Now it can be used in a conditional to see if another value has been assigned in the `defensive` iteration.
+2. Iterate through the `WINNING_LINES` constant
+3. Within each iteration, assign the value (if any) returned by `defensive_computer_move` to `square`
+4. Within `defensive_computer_move` method:
+    - If any of the winning lines contain 2 of the opponent's marker and 1 of the initial marker
+    - Return the element in the current `line` whose value is `INITIAL_MARKER`
+    - Should there be no defensive moves available, the `if` statement will return `nil` which will be assigned to `square` again.
+5. Break out of the iterations through `WINNING_LINES` if square is assigned a truthy value
+6. If `square` still references `nil`
+    - Assign a random square as before
+7. Mutate the `board` hash to reflect the computer's move, whether random of defensive
