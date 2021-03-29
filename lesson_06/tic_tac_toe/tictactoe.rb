@@ -100,13 +100,13 @@ end
 def computer_places_piece!(brd)
   square = nil
 
-  # Defensive move if necessary
+  # Defensive or offensive move if available
   WINNING_LINES.each do |line|
-    square = defensive_computer_move(line, brd)
+    square = aggressive_computer_move(line, brd)
     break if square
   end
 
-  # Random move if defense not necessary
+  # Random move if other moves not available
   if !square # i.e. if square still references `nil`
     square = empty_squares(brd).sample
   end
@@ -114,9 +114,12 @@ def computer_places_piece!(brd)
   brd[square] = COMPUTER_MARKER
 end
 
-def defensive_computer_move(line, brd)
+def aggressive_computer_move(line, brd)
   if brd.values_at(*line).count(PLAYER_MARKER) == 2 &&
      brd.values_at(*line).count(INITIAL_MARKER) == 1
+    line.find { |sq| brd[sq] == INITIAL_MARKER }
+  elsif brd.values_at(*line).count(COMPUTER_MARKER) == 2 &&
+        brd.values_at(*line).count(INITIAL_MARKER) == 1
     line.find { |sq| brd[sq] == INITIAL_MARKER }
   end
 end

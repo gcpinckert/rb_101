@@ -96,3 +96,29 @@ Make the computer defensive minded. If there is an immediate threat (i.e. if the
 6. If `square` still references `nil`
     - Assign a random square as before
 7. Mutate the `board` hash to reflect the computer's move, whether random of defensive
+
+## Computer AI: Offense
+
+### Problem
+
+Give the computer an offensive move option: If the computer has 2 squares in a winning row filled, have it mark the 3rd square in that row (instead of moving at random).
+
+### Rules
+
+1. First the computer should check to see if it needs to move defensively (see above). 
+2. Then the computer should check to see if it has an offensive opportunity
+    - If two of the squares in any of the `WINNING_ROWS` are filled
+    - Have the computer mark the third square in that row
+3. Otherwise, if there is no availability for defense or offense, have the computer choose a square at random.
+
+### Algorithm / Data Structure
+
+1. Iterate through the `WINNING_LINES` constant
+    - Within each iteration, assign the value (if any) returned by `aggressive_computer_move` to `square`.
+        - First check to see if there are defensive moves available (see above)
+        - If any of the winning lines contain 2 of the computer's marker and 1 of the initial marker:
+        - Return the element in the current `line` whose value is `INITIAL_MARKER`.
+        - If no aggressive moves are available, the `if` statement will return `nil` which will keep square with a falsey value
+    - Break out of the iterations through `WINNING_LINES` if square is assigned a truthy value
+2. If `square` still references `nil` assign a random square as before
+3. Mutate the `board` hash to reflect the computer's move
