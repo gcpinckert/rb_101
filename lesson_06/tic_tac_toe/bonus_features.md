@@ -137,10 +137,37 @@ Give the computer an offensive move option: If the computer has 2 squares in a w
 
 3. Create a constant such that the game can be played with either the computer or the player going first. If the constant is set to "choose", the game should prompt the user to determine who goes first. Valid options for the constant can be "player", "computer", or "choose".
 
+### Pick Square #5
+
+- Add conditional within the `if !square` statement on ln 117.
+- If the #5 square is still empty (i.e. if it's value in the `board` hash is `INITIAL_MARKER`)
+- `square` will be equal to `5`.
+- Otherwise, the computer will choose a move randomly as before
+
+### Who Goes First?
+
+- Create a constant `FIRST_TURN = { current_player: 'choose' }`.
+- In a separate method, prompt the user to choose who will go first, `'Player'` or `'Tic-Tac-Toeminator'`
+  - Have `'p'` = `PLAYER` and `'t'` = `COMPUTER`.
+  - Validate input
+  - Modify the `FIRST_TURN` hash according to the user's choice
+- In the `turn_cycle` method definition:
+  - If `FIRST_TURN[:current_player] == PLAYER`: game play proceeds as before
+  - If `FIRST_TURN[:current_player] == COMPUTER`
+    - New method `computer_first` (??)
+    - `computer_places_piece!` comes before `player_places_piece!`
+  - After each turn_cycle when we start a new match
+    - Switch the `FIRST_TURN[:current_player]` to the alternate value (new method?)
+- When a new tournament is begun, reset `FIRST_TURN[:current_player]` to `'Choose'`
+
 ## Other Improvement To-Dos
 
-1. Extract all instances of the strings "Player" & "Tic-Tac-Toeminator" to constants
-2. Find a way to print the square numbers when the board is displayed
-3. Go through and make sure all methods are discreet and simple for easy code readability
-4. Make it harder to beat the computer?
-5. Better input validation throughout
+- [x] Extract all instances of the strings "Player" & "Tic-Tac-Toeminator" to constants
+- [ ] Print the square numbers when the board is displayed
+- [ ] Go through and make sure all methods are discreet and simple for easy code readability
+- [ ] Organize method definitions for easy code readability
+- [ ] Make it harder to beat the computer
+- [ ] Better input validation throughout
+- [ ] Get rid of any code redundancies
+- [ ] Extract hard-coded `5` (games to win tournament) to constant (`tournament_over?` line 249)
+- [ ] Switch markers when first turn is alternated? (Traditionally, 'X' goes first)

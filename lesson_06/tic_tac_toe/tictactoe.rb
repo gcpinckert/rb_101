@@ -1,6 +1,13 @@
+PLAYER = 'Player'
+COMPUTER = 'Tic-Tac-Toeminator'
+
+# Set to `PLAYER`, `COMPUTER`, or `Choose`
+FIRST_TURN = { first_player: 'Choose' }
+
 INITIAL_MARKER = ' '
 PLAYER_MARKER = 'X'
 COMPUTER_MARKER = 'O'
+
 WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
                 [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # columns
                 [[1, 5, 9], [3, 5, 7]]              # diagonals
@@ -38,8 +45,8 @@ end
 def display_board(brd, scores)
   system 'clear'
   puts "You are #{PLAYER_MARKER}. Tic-Tac-Toeminator is #{COMPUTER_MARKER}."
-  puts "Score: You - #{scores['Player']}" \
-       " Tic-Tac-Toeminator - #{scores['Tic-Tac-Toeminator']}"
+  puts "Score: You - #{scores[PLAYER]}" \
+       " Tic-Tac-Toeminator - #{scores[COMPUTER]}"
   puts ""
   puts "     |     |"
   puts "  #{brd[1]}  |  #{brd[2]}  |  #{brd[3]}"
@@ -62,6 +69,35 @@ def initialize_board
   new_board = {}
   (1..9).each { |num| new_board[num] = INITIAL_MARKER }
   new_board
+end
+
+# Prompts the user to chose who goes first in current tournament
+def get_first_turn!
+  if FIRST_TURN[:first_player] == 'Choose'
+    answer = nil
+
+    loop do
+      prompt_pause "Who should go first? Enter 'p' for #{PLAYER} or 't' for #{COMPUTER}"
+      answer = gets.chomp.downcase
+      break if ['p', 't'].include?(answer)
+      prompt_pause "Sorry, that's not a valid choice. Please enter 'p' or 't'."
+    end
+
+    if answer == 'p'
+      FIRST_TURN[:first_player] = PLAYER
+    else
+      FIRST_TURN[:first_player] = COMPUTER
+    end
+  end
+end
+
+# Alternates the player that goes first for each game in tournament
+def alternate_first_turn!
+  if FIRST_TURN[:first_player] == PLAYER
+    FIRST_TURN[:first_player] = COMPUTER
+  else
+    FIRST_TURN[:first_player] = PLAYER
+  end
 end
 
 # Returns an array of integers representing available moves
@@ -133,6 +169,34 @@ def aggressive_computer_move(line, brd, marker)
   end
 end
 
+# Loops through single turn for each player until winner or tie
+def turn_cycle(brd, scores)
+  loop do
+    display_board(brd, scores)
+
+    # TODO: Get rid of redundancies here - extract to new method
+    case FIRST_TURN[:first_player]
+    when PLAYER
+      player_places_piece!(brd)
+      break if someone_won?(brd) || board_full?(brd)
+
+      computer_places_piece!(brd)
+      break if someone_won?(brd) || board_full?(brd)
+    when COMPUTER
+      computer_places_piece!(brd)
+      break if someone_won?(brd) || board_full?(brd)
+
+      display_board(brd, scores)
+
+      player_places_piece!(brd)
+      break if someone_won?(brd) || board_full?(brd)
+    end
+
+  end
+
+  display_board(brd, scores)
+end
+
 # Determines if there is a tie
 def board_full?(brd)
   empty_squares(brd).empty?
@@ -147,26 +211,13 @@ end
 def detect_winner(brd)
   WINNING_LINES.each do |line|
     if brd.values_at(*line).count(PLAYER_MARKER) == 3
-      return "Player"
+      return PLAYER
     elsif brd.values_at(*line).count(COMPUTER_MARKER) == 3
-      return "Tic-Tac-Toeminator"
+      return COMPUTER
     end
   end
 
   nil
-end
-
-# Loops through single turn for each player until winner or tie
-def turn_cycle(brd, scores)
-  loop do
-    display_board(brd, scores)
-    player_places_piece!(brd)
-    break if someone_won?(brd) || board_full?(brd)
-    computer_places_piece!(brd)
-    break if someone_won?(brd) || board_full?(brd)
-  end
-
-  display_board(brd, scores)
 end
 
 # Displays winner and updates scores
@@ -177,8 +228,8 @@ def game_over(brd, scores)
   else
     prompt_pause "It's a tie!"
   end
-  prompt_pause "Score is now: Player - #{scores['Player']}" \
-               " Tic-Tac-Toeminator - #{scores['Tic-Tac-Toeminator']}."
+  prompt_pause "Score is now: Player - #{scores[PLAYER]}" \
+               " Tic-Tac-Toeminator - #{scores[COMPUTER]}."
 end
 
 # Single game loops until tournament is won
@@ -188,6 +239,7 @@ def play_game(scores)
 
     turn_cycle(board, scores)
     game_over(board, scores)
+    alternate_first_turn!
 
     break if tournament_over?(scores)
   end
@@ -195,15 +247,17 @@ end
 
 # Determines if the tournament has a winner
 def tournament_over?(scores)
-  scores["Player"] >= 5 || scores["Tic-Tac-Toeminator"] >= 5
+  scores[PLAYER] >= 5 || scores[COMPUTER] >= 5
 end
 
 # Tournament loops until there is a winner
 def play_tournament
   loop do
-    scores = { "Player" => 0, "Tic-Tac-Toeminator" => 0 }
-    play_game(scores)
+    FIRST_TURN[:first_player] = 'Choose'
+    scores = { PLAYER => 0, COMPUTER => 0 }
 
+    get_first_turn!
+    play_game(scores)
     display_tournament_winner(scores)
 
     prompt_pause "Play again? (y or n)"
@@ -216,7 +270,7 @@ end
 def display_tournament_winner(scores)
   system 'clear'
   puts ""
-  if scores["Player"] < scores["Tic-Tac-Toeminator"]
+  if scores[PLAYER] < scores[COMPUTER]
     puts "  ____                         ___"
     puts " / ___| __ _ _ __ ___   ___   / _ \\__   _____ _ __"
     puts "| |  _ / _` | '_ ` _ \\ / _ \\ | | | \\ \\ / / _ \\ '__|"
