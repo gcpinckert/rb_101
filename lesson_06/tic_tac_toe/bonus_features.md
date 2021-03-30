@@ -113,12 +113,34 @@ Give the computer an offensive move option: If the computer has 2 squares in a w
 
 ### Algorithm / Data Structure
 
-1. Iterate through the `WINNING_LINES` constant
-    - Within each iteration, assign the value (if any) returned by `aggressive_computer_move` to `square`.
-        - First check to see if there are defensive moves available (see above)
+1. First check to see if there are defensive moves available (see above)
+2. Iterate through the `WINNING_LINES` constant
+    - Within each iteration, assign the value (if any) returned by `offensive_computer_move` to `square`.
         - If any of the winning lines contain 2 of the computer's marker and 1 of the initial marker:
         - Return the element in the current `line` whose value is `INITIAL_MARKER`.
-        - If no aggressive moves are available, the `if` statement will return `nil` which will keep square with a falsey value
+        - If no offensive moves are available, the `if` statement will return `nil` which will keep square with a falsey value
     - Break out of the iterations through `WINNING_LINES` if square is assigned a truthy value
-2. If `square` still references `nil` assign a random square as before
-3. Mutate the `board` hash to reflect the computer's move
+3. If `square` still references `nil` assign a random square as before
+4. Mutate the `board` hash to reflect the computer's move
+
+## Computer Turn Refinements
+
+### Problem
+
+1. Currently, the computer chooses a defensive move even if it has the chance to win. Update the code so it plays it's offensive move first if it has a chance to win.
+
+2. Have the computer choose square #5 if it is available. Basically the logic for the computer move should go in the following order:
+    - Win if a winning move is available
+    - Defend if opponent has an opportunity to make a winning move
+    - Pick square #5 if it is available
+    - Pick a random square
+
+3. Create a constant such that the game can be played with either the computer or the player going first. If the constant is set to "choose", the game should prompt the user to determine who goes first. Valid options for the constant can be "player", "computer", or "choose".
+
+## Other Improvement To-Dos
+
+1. Extract all instances of the strings "Player" & "Tic-Tac-Toeminator" to constants
+2. Find a way to print the square numbers when the board is displayed
+3. Go through and make sure all methods are discreet and simple for easy code readability
+4. Make it harder to beat the computer?
+5. Better input validation throughout

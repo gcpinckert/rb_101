@@ -29,7 +29,7 @@ def display_welcome
     prompt_pause "Are you ready to save humanity from the tyranny of the O's?"
     prompt_pause "Enter 'y' to begin!"
     answer = gets.chomp.downcase
-    break if answer == 'y'
+    break if answer == 'y' # TODO - better input validation
   end
 end
 # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
@@ -56,7 +56,7 @@ def display_board(brd, scores)
 end
 # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
-# Generates hash in which key is a integer representing square on the board
+# Generates hash in which key is an integer representing square on the board
 # Value tells what to display in the board when output (X, O, or blank square)
 def initialize_board
   new_board = {}
@@ -69,6 +69,7 @@ def empty_squares(brd)
   brd.keys.select { |num| brd[num] == INITIAL_MARKER }
 end
 
+# Creates a grammatically correct listing of moves available to user
 def joinor(array, punctuation = ', ', conjunction = 'or')
   case array.length
   when 0 then ''
@@ -100,26 +101,34 @@ end
 def computer_places_piece!(brd)
   square = nil
 
-  # Defensive or offensive move if available
+  # Winning move if available
   WINNING_LINES.each do |line|
-    square = aggressive_computer_move(line, brd)
     break if square
+    square = aggressive_computer_move(line, brd, COMPUTER_MARKER)
+  end
+
+  # Blocking move if available
+  WINNING_LINES.each do |line|
+    break if square
+    square = aggressive_computer_move(line, brd, PLAYER_MARKER)
   end
 
   # Random move if other moves not available
   if !square # i.e. if square still references `nil`
-    square = empty_squares(brd).sample
+    if brd[5] == INITIAL_MARKER
+      square = 5
+    else
+      square = empty_squares(brd).sample
+    end
   end
 
   brd[square] = COMPUTER_MARKER
 end
 
-def aggressive_computer_move(line, brd)
-  if brd.values_at(*line).count(PLAYER_MARKER) == 2 &&
+# Causes computer to move offensively or defensively if available
+def aggressive_computer_move(line, brd, marker)
+  if brd.values_at(*line).count(marker) == 2 &&
      brd.values_at(*line).count(INITIAL_MARKER) == 1
-    line.find { |sq| brd[sq] == INITIAL_MARKER }
-  elsif brd.values_at(*line).count(COMPUTER_MARKER) == 2 &&
-        brd.values_at(*line).count(INITIAL_MARKER) == 1
     line.find { |sq| brd[sq] == INITIAL_MARKER }
   end
 end
@@ -147,6 +156,7 @@ def detect_winner(brd)
   nil
 end
 
+# Loops through single turn for each player until winner or tie
 def turn_cycle(brd, scores)
   loop do
     display_board(brd, scores)
@@ -159,6 +169,7 @@ def turn_cycle(brd, scores)
   display_board(brd, scores)
 end
 
+# Displays winner and updates scores
 def game_over(brd, scores)
   if someone_won?(brd)
     scores[detect_winner(brd)] += 1
@@ -170,6 +181,7 @@ def game_over(brd, scores)
                " Tic-Tac-Toeminator - #{scores['Tic-Tac-Toeminator']}."
 end
 
+# Single game loops until tournament is won
 def play_game(scores)
   loop do
     board = initialize_board
@@ -181,10 +193,12 @@ def play_game(scores)
   end
 end
 
+# Determines if the tournament has a winner
 def tournament_over?(scores)
   scores["Player"] >= 5 || scores["Tic-Tac-Toeminator"] >= 5
 end
 
+# Tournament loops until there is a winner
 def play_tournament
   loop do
     scores = { "Player" => 0, "Tic-Tac-Toeminator" => 0 }
