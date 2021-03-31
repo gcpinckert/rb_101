@@ -245,9 +245,28 @@ def play_game(scores)
 
     turn_cycle(board, scores)
     game_over(board, scores)
+    keep_playing?
+
     alternate_first_turn!
 
     break if tournament_over?(scores)
+  end
+end
+
+# Asks user if they want to keep playing
+def keep_playing?
+  answer = nil
+
+  loop do
+    prompt_pause "Would you like to keep playing? Enter 'y' or 'n'."
+    answer = gets.chomp.downcase
+    break if ['y', 'yes', 'n', 'no'].include?(answer)
+    prompt_pause "Invalid input. Please enter 'y' or 'n'."
+  end
+
+  if ['n', 'no'].include?(answer)
+    display_goodbye
+    exit
   end
 end
 

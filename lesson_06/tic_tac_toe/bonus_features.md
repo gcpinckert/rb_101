@@ -195,5 +195,5 @@ Above, the `place_piece!` just such a generic method. Depending on what value is
 - [x] Better input validation throughout
 - [x] Get rid of any code redundancies
 - [x] Extract hard-coded `5` (games to win tournament) to constant (`tournament_over?` line 249)
-- [ ] Switch markers when first turn is alternated? (Traditionally, 'X' goes first)
-- [ ] Add "Would you like to keep playing?" after each game to make it easy to quit out before tournament completion
+- [ ] Switch markers when first turn is alternated? (Traditionally, 'X' goes first, but is this confusing?)
+- [x] Add "Would you like to keep playing?" after each game to make it easy to quit out before tournament completion
