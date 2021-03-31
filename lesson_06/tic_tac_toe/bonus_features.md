@@ -160,6 +160,32 @@ Give the computer an offensive move option: If the computer has 2 squares in a w
     - Switch the `FIRST_TURN[:current_player]` to the alternate value (new method?)
 - When a new tournament is begun, reset `FIRST_TURN[:current_player]` to `'Choose'`
 
+## Improve the Game Loop
+
+In the main game loop (`turn_cycle` method definition, lines 173 - 198) there is some redundancy. Not only do we have a break statement after each player makes a move, but currently (as of commit `dad67a6f`) we have each player's turn being called in different order according to who goes first. This can be made more efficient by writing a generic method that marks a square based on a player.
+
+Example:
+
+```ruby
+loop do
+  display_board(board)
+  place_piece!(board, current_player)
+  current_player = alternate_player(current_player)
+  break if someone_won?(board) || board_full?(board)
+end
+```
+
+Above, the `place_piece!` just such a generic method. Depending on what value is passed to it as the argument `current_player`, it should call either `computer_places_piece!` (line 137) or `player_places_piece!` (line 121). 
+
+### Algorithm
+
+- `place_piece!` method
+  - If `current_player == PLAYER` then invoke `player_places_piece!`
+  - If `current_player == COMPUTER` then invoke `computer_places_piece!`
+- `alternate_player`
+  - If `current_player == PLAYER` then set it to `COMPUTER`
+  - If `current_player == COMPUTER` then set it to `PLAYER`
+
 ## Other Improvement To-Dos
 
 - [x] Extract all instances of the strings "Player" & "Tic-Tac-Toeminator" to constants
@@ -171,3 +197,4 @@ Give the computer an offensive move option: If the computer has 2 squares in a w
 - [ ] Get rid of any code redundancies
 - [ ] Extract hard-coded `5` (games to win tournament) to constant (`tournament_over?` line 249)
 - [ ] Switch markers when first turn is alternated? (Traditionally, 'X' goes first)
+- [ ] Add "Would you like to keep playing?" after each game to make it easy to quit out before tournament completion

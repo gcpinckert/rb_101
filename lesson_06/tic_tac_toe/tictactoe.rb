@@ -72,32 +72,29 @@ def initialize_board
 end
 
 # Prompts the user to chose who goes first in current tournament
-def get_first_turn!
+def ask_first_turn!
   if FIRST_TURN[:first_player] == 'Choose'
     answer = nil
 
     loop do
-      prompt_pause "Who should go first? Enter 'p' for #{PLAYER} or 't' for #{COMPUTER}"
+      prompt_pause "Who should go first? Enter 'p' for #{PLAYER}" \
+                   " or 't' for #{COMPUTER}"
       answer = gets.chomp.downcase
       break if ['p', 't'].include?(answer)
       prompt_pause "Sorry, that's not a valid choice. Please enter 'p' or 't'."
     end
 
-    if answer == 'p'
-      FIRST_TURN[:first_player] = PLAYER
-    else
-      FIRST_TURN[:first_player] = COMPUTER
-    end
+    FIRST_TURN[:first_player] = (answer == 'p' ? PLAYER : COMPUTER)
   end
 end
 
 # Alternates the player that goes first for each game in tournament
 def alternate_first_turn!
-  if FIRST_TURN[:first_player] == PLAYER
-    FIRST_TURN[:first_player] = COMPUTER
-  else
-    FIRST_TURN[:first_player] = PLAYER
-  end
+  FIRST_TURN[:first_player] = if FIRST_TURN[:first_player] == PLAYER
+                                COMPUTER
+                              else
+                                PLAYER
+                              end
 end
 
 # Returns an array of integers representing available moves
@@ -151,11 +148,7 @@ def computer_places_piece!(brd)
 
   # Random move if other moves not available
   if !square # i.e. if square still references `nil`
-    if brd[5] == INITIAL_MARKER
-      square = 5
-    else
-      square = empty_squares(brd).sample
-    end
+    square = (brd[5] == INITIAL_MARKER ? 5 : empty_squares(brd).sample)
   end
 
   brd[square] = COMPUTER_MARKER
@@ -169,29 +162,27 @@ def aggressive_computer_move(line, brd, marker)
   end
 end
 
+# Marks the board according to which player's turn it is
+def place_piece!(brd, player)
+  player_places_piece!(brd) if player == PLAYER
+  computer_places_piece!(brd) if player == COMPUTER
+end
+
+# Alternates player after a single turn
+def alternate_player(player)
+  return COMPUTER if player == PLAYER
+  return PLAYER if player == COMPUTER
+end
+
 # Loops through single turn for each player until winner or tie
 def turn_cycle(brd, scores)
+  current_player = FIRST_TURN[:first_player]
+
   loop do
     display_board(brd, scores)
-
-    # TODO: Get rid of redundancies here - extract to new method
-    case FIRST_TURN[:first_player]
-    when PLAYER
-      player_places_piece!(brd)
-      break if someone_won?(brd) || board_full?(brd)
-
-      computer_places_piece!(brd)
-      break if someone_won?(brd) || board_full?(brd)
-    when COMPUTER
-      computer_places_piece!(brd)
-      break if someone_won?(brd) || board_full?(brd)
-
-      display_board(brd, scores)
-
-      player_places_piece!(brd)
-      break if someone_won?(brd) || board_full?(brd)
-    end
-
+    place_piece!(brd, current_player)
+    current_player = alternate_player(current_player)
+    break if someone_won?(brd) || board_full?(brd)
   end
 
   display_board(brd, scores)
@@ -256,7 +247,7 @@ def play_tournament
     FIRST_TURN[:first_player] = 'Choose'
     scores = { PLAYER => 0, COMPUTER => 0 }
 
-    get_first_turn!
+    ask_first_turn!
     play_game(scores)
     display_tournament_winner(scores)
 
