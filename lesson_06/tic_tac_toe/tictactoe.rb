@@ -133,7 +133,7 @@ def player_places_piece!(brd)
     if empty_squares(brd).include?(square)
       break
     else
-      prompt_pause "Sorry, that's not a valid choice"
+      prompt_pause "Sorry, that's not a valid choice."
     end
   end
 
@@ -221,10 +221,15 @@ def detect_winner(brd)
   nil
 end
 
-# Displays winner and updates scores
+# Updates score hash
+def update_score!(brd, scores)
+  scores[detect_winner(brd)] += 1
+end
+
+# Displays winner and current score
 def game_over(brd, scores)
   if someone_won?(brd)
-    scores[detect_winner(brd)] += 1 # TODO extract to different method
+    update_score!(brd, scores)
     prompt_pause "#{detect_winner(brd)} won!"
   else
     prompt_pause "It's a tie!"
@@ -268,6 +273,7 @@ def play_tournament
       break if ['y', 'yes', 'n', 'no'].include?(answer)
       prompt_pause "Please enter 'y' or 'n'."
     end
+
     break if ['n', 'no'].include?(answer)
   end
 end
