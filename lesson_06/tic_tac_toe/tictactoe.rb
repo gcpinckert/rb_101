@@ -8,6 +8,7 @@ INITIAL_MARKER = ' '
 PLAYER_MARKER = 'X'
 COMPUTER_MARKER = 'O'
 
+GAMES_TO_WIN = 5
 WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
                 [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # columns
                 [[1, 5, 9], [3, 5, 7]]              # diagonals
@@ -32,7 +33,8 @@ def display_welcome
     prompt_pause "Welcome to Tic Tac Toe!"
     prompt_pause "Your goal: beat the Tic-Tac-Toeminator."
     prompt_pause "Get three X's in a row, horizontal, vertical, or diagonal."
-    prompt_pause "The first player to win five games achieves ultimate victory."
+    prompt_pause "The first player to win #{GAMES_TO_WIN} games achieves " \
+                 "ultimate victory."
     prompt_pause "Are you ready to save humanity from the tyranny of the O's?"
     prompt_pause "Enter 'y' to begin!"
     answer = gets.chomp.downcase
@@ -48,14 +50,17 @@ def display_board(brd, scores)
   puts "Score: You - #{scores[PLAYER]}" \
        " Tic-Tac-Toeminator - #{scores[COMPUTER]}"
   puts ""
+  puts " (1)   (2)   (3)"
   puts "     |     |"
   puts "  #{brd[1]}  |  #{brd[2]}  |  #{brd[3]}"
   puts "     |     |"
   puts "-----+-----+-----"
+  puts " (4)   (5)   (6)"
   puts "     |     |"
   puts "  #{brd[4]}  |  #{brd[5]}  |  #{brd[6]}"
   puts "     |     |"
   puts "-----+-----+-----"
+  puts " (7)   (8)   (9)"
   puts "     |     |"
   puts "  #{brd[7]}  |  #{brd[8]}  |  #{brd[9]}"
   puts "     |     |"
@@ -238,7 +243,7 @@ end
 
 # Determines if the tournament has a winner
 def tournament_over?(scores)
-  scores[PLAYER] >= 5 || scores[COMPUTER] >= 5
+  scores[PLAYER] >= GAMES_TO_WIN || scores[COMPUTER] >= GAMES_TO_WIN
 end
 
 # Tournament loops until there is a winner

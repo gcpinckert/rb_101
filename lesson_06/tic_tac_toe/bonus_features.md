@@ -189,12 +189,11 @@ Above, the `place_piece!` just such a generic method. Depending on what value is
 ## Other Improvement To-Dos
 
 - [x] Extract all instances of the strings "Player" & "Tic-Tac-Toeminator" to constants
-- [ ] Print the square numbers when the board is displayed
-- [ ] Go through and make sure all methods are discreet and simple for easy code readability
+- [x] Print the square numbers when the board is displayed
+- [ ] Go through and make sure all methods are discreet and simple (i.e. side-effect or return value? not both)
 - [ ] Organize method definitions for easy code readability
-- [ ] Make it harder to beat the computer
 - [ ] Better input validation throughout
 - [ ] Get rid of any code redundancies
-- [ ] Extract hard-coded `5` (games to win tournament) to constant (`tournament_over?` line 249)
+- [x] Extract hard-coded `5` (games to win tournament) to constant (`tournament_over?` line 249)
 - [ ] Switch markers when first turn is alternated? (Traditionally, 'X' goes first)
 - [ ] Add "Would you like to keep playing?" after each game to make it easy to quit out before tournament completion
