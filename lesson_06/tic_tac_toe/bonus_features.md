@@ -192,7 +192,7 @@ Above, the `place_piece!` just such a generic method. Depending on what value is
 - [x] Print the square numbers when the board is displayed
 - [ ] Go through and make sure all methods are discreet and simple (i.e. side-effect or return value? not both)
 - [ ] Organize method definitions for easy code readability
-- [ ] Better input validation throughout
+- [x] Better input validation throughout
 - [ ] Get rid of any code redundancies
 - [x] Extract hard-coded `5` (games to win tournament) to constant (`tournament_over?` line 249)
 - [ ] Switch markers when first turn is alternated? (Traditionally, 'X' goes first)

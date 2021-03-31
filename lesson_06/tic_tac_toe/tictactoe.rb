@@ -20,25 +20,30 @@ end
 
 # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
 def display_welcome
+  system 'clear'
+  puts ""
+  puts " _____ _        _____            _____"
+  puts "|_   _(_) ___  |_   _|_ _  ___  |_   _|__   ___"
+  puts "  | | | |/ __|   | |/ _` |/ __|   | |/ _ \\ / _ \\"
+  puts "  | | | | (__    | | (_| | (__    | | (_) |  __/"
+  puts "  |_| |_|\\___|   |_|\\__,_|\\___|   |_|\\___/ \\___|"
+  puts ""
+  puts ""
+  prompt_pause "Welcome to Tic Tac Toe!"
+  prompt_pause "Your goal: beat the Tic-Tac-Toeminator."
+  prompt_pause "Get three X's in a row, horizontal, vertical, or diagonal."
+  prompt_pause "The first player to win #{GAMES_TO_WIN} games achieves " \
+               "ultimate victory."
+  prompt_pause "Are you ready to save humanity from the tyranny of the O's?!"
+  prompt_pause "Enter 'y' to begin or 'q' to exit."
   loop do
-    system 'clear'
-    puts ""
-    puts " _____ _        _____            _____"
-    puts "|_   _(_) ___  |_   _|_ _  ___  |_   _|__   ___"
-    puts "  | | | |/ __|   | |/ _` |/ __|   | |/ _ \\ / _ \\"
-    puts "  | | | | (__    | | (_| | (__    | | (_) |  __/"
-    puts "  |_| |_|\\___|   |_|\\__,_|\\___|   |_|\\___/ \\___|"
-    puts ""
-    puts ""
-    prompt_pause "Welcome to Tic Tac Toe!"
-    prompt_pause "Your goal: beat the Tic-Tac-Toeminator."
-    prompt_pause "Get three X's in a row, horizontal, vertical, or diagonal."
-    prompt_pause "The first player to win #{GAMES_TO_WIN} games achieves " \
-                 "ultimate victory."
-    prompt_pause "Are you ready to save humanity from the tyranny of the O's?"
-    prompt_pause "Enter 'y' to begin!"
     answer = gets.chomp.downcase
-    break if answer == 'y' # TODO - better input validation
+    break if answer == 'y'
+    if answer == 'q'
+      display_goodbye
+      exit
+    end
+    prompt_pause "Invalid input, please enter 'y' or 'q'."
   end
 end
 # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
@@ -151,15 +156,15 @@ def computer_places_piece!(brd)
     square = aggressive_computer_move(line, brd, PLAYER_MARKER)
   end
 
-  # Random move if other moves not available
-  if !square # i.e. if square still references `nil`
+  # Square 5 or random move if other moves not available
+  if !square
     square = (brd[5] == INITIAL_MARKER ? 5 : empty_squares(brd).sample)
   end
 
   brd[square] = COMPUTER_MARKER
 end
 
-# Causes computer to move offensively or defensively if available
+# Finds blocking or winning move if available
 def aggressive_computer_move(line, brd, marker)
   if brd.values_at(*line).count(marker) == 2 &&
      brd.values_at(*line).count(INITIAL_MARKER) == 1
@@ -179,7 +184,7 @@ def alternate_player(player)
   return PLAYER if player == COMPUTER
 end
 
-# Loops through single turn for each player until winner or tie
+# Loops through single turn for both players until winner or tie
 def turn_cycle(brd, scores)
   current_player = FIRST_TURN[:first_player]
 
@@ -219,13 +224,13 @@ end
 # Displays winner and updates scores
 def game_over(brd, scores)
   if someone_won?(brd)
-    scores[detect_winner(brd)] += 1
+    scores[detect_winner(brd)] += 1 # TODO extract to different method
     prompt_pause "#{detect_winner(brd)} won!"
   else
     prompt_pause "It's a tie!"
   end
-  prompt_pause "Score is now: Player - #{scores[PLAYER]}" \
-               " Tic-Tac-Toeminator - #{scores[COMPUTER]}."
+  prompt_pause "Score is now: #{PLAYER} - #{scores[PLAYER]} " \
+               "#{COMPUTER} - #{scores[COMPUTER]}."
 end
 
 # Single game loops until tournament is won
@@ -257,8 +262,13 @@ def play_tournament
     display_tournament_winner(scores)
 
     prompt_pause "Play again? (y or n)"
-    answer = gets.chomp
-    break unless answer.downcase.start_with?('y')
+    answer = nil
+    loop do
+      answer = gets.chomp.downcase
+      break if ['y', 'yes', 'n', 'no'].include?(answer)
+      prompt_pause "Please enter 'y' or 'n'."
+    end
+    break if ['n', 'no'].include?(answer)
   end
 end
 
