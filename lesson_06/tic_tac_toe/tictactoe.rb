@@ -245,7 +245,7 @@ def play_game(scores)
 
     turn_cycle(board, scores)
     game_over(board, scores)
-    keep_playing?
+    keep_playing? unless tournament_over?(scores)
 
     alternate_first_turn!
 
