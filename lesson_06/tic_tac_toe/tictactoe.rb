@@ -1,9 +1,6 @@
 PLAYER = 'Player'
 COMPUTER = 'Tic-Tac-Toeminator'
 
-# Set to `PLAYER`, `COMPUTER`, or `Choose`
-FIRST_TURN = { first_player: 'Choose' }
-
 INITIAL_MARKER = ' '
 PLAYER_MARKER = 'X'
 COMPUTER_MARKER = 'O'
@@ -12,6 +9,10 @@ GAMES_TO_WIN = 5
 WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
                 [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # columns
                 [[1, 5, 9], [3, 5, 7]]              # diagonals
+
+# Set to `PLAYER`, `COMPUTER`, or `Choose`
+$first_turn = 'Choose'
+
 
 def prompt_pause(msg)
   puts "=> #{msg}"
@@ -93,7 +94,7 @@ end
 
 # Prompts the user to chose who goes first in current tournament
 def ask_first_turn!
-  if FIRST_TURN[:first_player] == 'Choose'
+  if $first_turn == 'Choose'
     answer = nil
 
     loop do
@@ -104,17 +105,13 @@ def ask_first_turn!
       prompt_pause "Sorry, that's not a valid choice. Please enter 'p' or 't'."
     end
 
-    FIRST_TURN[:first_player] = (answer == 'p' ? PLAYER : COMPUTER)
+    $first_turn = (answer == 'p' ? PLAYER : COMPUTER)
   end
 end
 
 # Alternates the player that goes first for each game in tournament
 def alternate_first_turn!
-  FIRST_TURN[:first_player] = if FIRST_TURN[:first_player] == PLAYER
-                                COMPUTER
-                              else
-                                PLAYER
-                              end
+  $first_turn = $first_turn == PLAYER ? COMPUTER : PLAYER
 end
 
 # Returns an array of integers representing available moves
@@ -196,7 +193,7 @@ end
 
 # Loops through single turn for both players until winner or tie
 def turn_cycle(brd, scores)
-  current_player = FIRST_TURN[:first_player]
+  current_player = $first_turn
 
   loop do
     display_board(brd, scores)
@@ -278,7 +275,7 @@ end
 # Tournament loops until there is a winner
 def play_tournament
   loop do
-    FIRST_TURN[:first_player] = 'Choose'
+    $first_turn = 'Choose'
     scores = { PLAYER => 0, COMPUTER => 0 }
 
     ask_first_turn!
