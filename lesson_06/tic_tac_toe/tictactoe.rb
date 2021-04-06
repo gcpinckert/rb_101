@@ -139,15 +139,15 @@ def player_places_piece!(brd)
   square = ''
   loop do
     prompt_pause "Choose a square (#{joinor(empty_squares(brd))}):"
-    square = gets.chomp.to_i
-    if empty_squares(brd).include?(square)
+    square = gets.chomp
+    if empty_squares(brd).include?(square.to_i) && square.to_i.to_s == square
       break
     else
       prompt_pause "Sorry, that's not a valid choice."
     end
   end
 
-  brd[square] = PLAYER_MARKER
+  brd[square.to_i] = PLAYER_MARKER
 end
 
 # Computer's turn:
