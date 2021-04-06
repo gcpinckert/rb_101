@@ -18,7 +18,24 @@ def prompt_pause(msg)
   sleep(1.5)
 end
 
-# rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+def valid_input
+  answer = nil
+
+  loop do
+    answer = gets.chomp.downcase.strip
+    break if ['y', 'yes', 'n', 'no'].include?(answer)
+    prompt_pause "Invalid input. Please enter 'y' or 'n'."
+  end
+
+  answer == 'y' || answer == 'yes' ? 'y' : 'n'
+end
+
+def quit_game
+  display_goodbye
+  exit
+end
+
+# rubocop:disable Metrics/MethodLength
 def display_welcome
   system 'clear'
   puts ""
@@ -35,18 +52,11 @@ def display_welcome
   prompt_pause "The first player to win #{GAMES_TO_WIN} games achieves " \
                "ultimate victory."
   prompt_pause "Are you ready to save humanity from the tyranny of the O's?!"
-  prompt_pause "Enter 'y' to begin or 'q' to exit."
-  loop do
-    answer = gets.chomp.downcase
-    break if answer == 'y'
-    if answer == 'q'
-      display_goodbye
-      exit
-    end
-    prompt_pause "Invalid input, please enter 'y' or 'q'."
-  end
+  prompt_pause "Enter 'y' to begin or 'n' to exit."
+  answer = valid_input
+  quit_game if answer == 'n'
 end
-# rubocop:enable Metrics/AbcSize, Metrics/MethodLength
+# rubocop:enable Metrics/MethodLength
 
 # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
 def display_board(brd, scores)
@@ -255,19 +265,9 @@ end
 
 # Asks user if they want to keep playing
 def keep_playing?
-  answer = nil
-
-  loop do
-    prompt_pause "Would you like to keep playing? Enter 'y' or 'n'."
-    answer = gets.chomp.downcase
-    break if ['y', 'yes', 'n', 'no'].include?(answer)
-    prompt_pause "Invalid input. Please enter 'y' or 'n'."
-  end
-
-  if ['n', 'no'].include?(answer)
-    display_goodbye
-    exit
-  end
+  prompt_pause "Would you like to keep playing? Enter 'y' or 'n'."
+  answer = valid_input
+  quit_game if answer == 'n'
 end
 
 # Determines if the tournament has a winner
@@ -285,15 +285,10 @@ def play_tournament
     play_game(scores)
     display_tournament_winner(scores)
 
-    prompt_pause "Play again? (y or n)"
-    answer = nil
-    loop do
-      answer = gets.chomp.downcase
-      break if ['y', 'yes', 'n', 'no'].include?(answer)
-      prompt_pause "Please enter 'y' or 'n'."
-    end
+    prompt_pause "Would you like to play again? Enter 'y' or 'n'."
+    answer = valid_input
 
-    break if ['n', 'no'].include?(answer)
+    break if answer == 'n'
   end
 end
 
