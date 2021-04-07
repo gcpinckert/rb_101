@@ -10,10 +10,6 @@ WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
                 [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # columns
                 [[1, 5, 9], [3, 5, 7]]              # diagonals
 
-# Set to `PLAYER`, `COMPUTER`, or `Choose`
-$first_turn = 'Choose'
-
-
 def prompt_pause(msg)
   puts "=> #{msg}"
   sleep(1.5)
@@ -92,26 +88,22 @@ def initialize_board
   new_board
 end
 
-# Prompts the user to chose who goes first in current tournament
-def ask_first_turn!
-  if $first_turn == 'Choose'
-    answer = nil
+def ask_first_turn
+  answer = nil
 
-    loop do
-      prompt_pause "Who should go first? Enter 'p' for #{PLAYER}" \
-                   " or 't' for #{COMPUTER}"
-      answer = gets.chomp.downcase
-      break if ['p', 't'].include?(answer)
-      prompt_pause "Sorry, that's not a valid choice. Please enter 'p' or 't'."
-    end
-
-    $first_turn = (answer == 'p' ? PLAYER : COMPUTER)
+  loop do
+    prompt_pause "Who should go first? Enter 'p' for #{PLAYER}" \
+                  " or 't' for #{COMPUTER}"
+    answer = gets.chomp.downcase
+    break if ['p', 't'].include?(answer)
+    prompt_pause "Sorry, that's not a valid choice. Please enter 'p' or 't'."
   end
+
+  answer == 'p' ? PLAYER : COMPUTER
 end
 
-# Alternates the player that goes first for each game in tournament
-def alternate_first_turn!
-  $first_turn = $first_turn == PLAYER ? COMPUTER : PLAYER
+def alternate_first_turn(first_turn)
+  first_turn == PLAYER ? COMPUTER : PLAYER
 end
 
 # Returns an array of integers representing available moves
@@ -119,7 +111,6 @@ def empty_squares(brd)
   brd.keys.select { |num| brd[num] == INITIAL_MARKER }
 end
 
-# Creates a grammatically correct listing of moves available to user
 def joinor(array, punctuation = ', ', conjunction = 'or')
   case array.length
   when 0 then ''
@@ -131,7 +122,6 @@ def joinor(array, punctuation = ', ', conjunction = 'or')
   end
 end
 
-# Player's turn
 def player_places_piece!(brd)
   square = ''
   loop do
@@ -147,7 +137,6 @@ def player_places_piece!(brd)
   brd[square.to_i] = PLAYER_MARKER
 end
 
-# Computer's turn:
 def computer_places_piece!(brd)
   square = nil
 
@@ -171,7 +160,6 @@ def computer_places_piece!(brd)
   brd[square] = COMPUTER_MARKER
 end
 
-# Finds blocking or winning move if available
 def aggressive_computer_move(line, brd, marker)
   if brd.values_at(*line).count(marker) == 2 &&
      brd.values_at(*line).count(INITIAL_MARKER) == 1
@@ -179,21 +167,18 @@ def aggressive_computer_move(line, brd, marker)
   end
 end
 
-# Marks the board according to which player's turn it is
 def place_piece!(brd, player)
   player_places_piece!(brd) if player == PLAYER
   computer_places_piece!(brd) if player == COMPUTER
 end
 
-# Alternates player after a single turn
 def alternate_player(player)
   return COMPUTER if player == PLAYER
   return PLAYER if player == COMPUTER
 end
 
-# Loops through single turn for both players until winner or tie
-def turn_cycle(brd, scores)
-  current_player = $first_turn
+def turn_cycle(brd, scores, first_turn)
+  current_player = first_turn
 
   loop do
     display_board(brd, scores)
@@ -205,17 +190,14 @@ def turn_cycle(brd, scores)
   display_board(brd, scores)
 end
 
-# Determines if there is a tie
 def board_full?(brd)
   empty_squares(brd).empty?
 end
 
-# Determines if the game is over
 def someone_won?(brd)
   !!detect_winner(brd) # If there is a winner, true, if nil, false
 end
 
-# Determines who the winner is, if any
 def detect_winner(brd)
   WINNING_LINES.each do |line|
     if brd.values_at(*line).count(PLAYER_MARKER) == 3
@@ -228,12 +210,10 @@ def detect_winner(brd)
   nil
 end
 
-# Updates score hash
 def update_score!(brd, scores)
   scores[detect_winner(brd)] += 1
 end
 
-# Displays winner and current score
 def game_over(brd, scores)
   if someone_won?(brd)
     update_score!(brd, scores)
@@ -245,41 +225,36 @@ def game_over(brd, scores)
                "#{COMPUTER} - #{scores[COMPUTER]}."
 end
 
-# Single game loops until tournament is won
-def play_game(scores)
+def play_game(scores, first_turn)
   loop do
     board = initialize_board
 
-    turn_cycle(board, scores)
+    turn_cycle(board, scores, first_turn)
     game_over(board, scores)
     keep_playing? unless tournament_over?(scores)
 
-    alternate_first_turn!
+    first_turn = alternate_first_turn(first_turn)
 
     break if tournament_over?(scores)
   end
 end
 
-# Asks user if they want to keep playing
 def keep_playing?
   prompt_pause "Would you like to keep playing? Enter 'y' or 'n'."
   answer = valid_input
   quit_game if answer == 'n'
 end
 
-# Determines if the tournament has a winner
 def tournament_over?(scores)
   scores[PLAYER] >= GAMES_TO_WIN || scores[COMPUTER] >= GAMES_TO_WIN
 end
 
-# Tournament loops until there is a winner
 def play_tournament
   loop do
-    $first_turn = 'Choose'
     scores = { PLAYER => 0, COMPUTER => 0 }
+    first_turn = ask_first_turn
 
-    ask_first_turn!
-    play_game(scores)
+    play_game(scores, first_turn)
     display_tournament_winner(scores)
 
     prompt_pause "Would you like to play again? Enter 'y' or 'n'."
