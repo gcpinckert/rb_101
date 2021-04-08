@@ -69,8 +69,12 @@ def calculate_hand_total(cards)
     end
   end
 
-  cards.count { |_, value| value == 'A' }.times { sum -= 10 if sum > 21 }
+  sum = correct_for_aces(cards, sum)
+  sum
+end
 
+def correct_for_aces(cards, sum)
+  cards.count { |_, value| value == 'A' }.times { sum -= 10 if sum > 21 }
   sum
 end
 
@@ -111,10 +115,17 @@ end
 def dealers_turn!(cards, deck)
   loop do
     break if calculate_hand_total(cards) >= 17
-    cards << deal_single_card!(deck)
+    prompt_pause "Dealer hits."
+    card = deal_single_card!(deck)
+    cards << card
+    prompt_pause "Dealer gets #{card}."
   end
 
-  prompt_pause "DEALER BUSTS!" if busted?(cards)
+  if busted?(cards)
+    prompt_pause "DEALER BUSTS!" 
+  else
+    prompt_pause "Dealer stays."
+  end
 end
 
 def play_game(hands, deck)
@@ -124,31 +135,32 @@ def play_game(hands, deck)
   dealers_turn!(hands[:dealer], deck) unless busted?(hands[:player])
 end
 
-def compare_cards(hands)
+def game_result(hands)
   case
-  when busted?(hands[:player]) then "Dealer"
-  when busted?(hands[:dealer]) then "Player"
+  when busted?(hands[:player]) then "Player busted. Dealer wins!"
+  when busted?(hands[:dealer]) then "Dealer busted. You win!"
   when calculate_hand_total(hands[:player]) > calculate_hand_total(hands[:dealer])
-    "Player"
+    "Player has more points. You win!"
   when calculate_hand_total(hands[:dealer]) > calculate_hand_total(hands[:player])
-    "Dealer"
+    "Dealer has more points. Dealer wins!"
   else "It's a tie!"
   end
 end
 
-def display_winner(hands, winner)
-  prompt_pause "Player had #{calculate_hand_total(hands[:player])} points."
-  prompt_pause "Dealer had #{calculate_hand_total(hands[:dealer])} points."
-  if winner == "It's a tie!"
-    prompt_pause winner
-  else
-    prompt_pause "#{winner} won!"
-  end
+def compare_cards(hands)
+  prompt_pause "Both players have stayed."
+  prompt_pause "Player has #{calculate_hand_total(hands[:player])} points."
+  prompt_pause "Dealer has #{calculate_hand_total(hands[:dealer])} points."
+end
+
+def display_winner(hands, result)
+  compare_cards(hands) unless busted?(hands[:player]) || busted?(hands[:dealer])
+  prompt_pause result
 end
 
 def game_over(hands)
-  winner = compare_cards(hands)
-  display_winner(hands, winner)
+  result = game_result(hands)
+  display_winner(hands, result)
 end
 
 def play_again
