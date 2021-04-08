@@ -174,7 +174,7 @@ def game_over(totals)
   display_winner(totals, result)
 end
 
-def play_again
+def play_again?
   answer = nil
   loop do
     prompt_pause "Would you like to play again? ('y' or 'n')"
@@ -183,7 +183,7 @@ def play_again
     prompt_pause "Invalid input. Please enter 'y' or 'n'."
   end
 
-  answer
+  answer == 'y'
 end
 
 def display_goodbye
@@ -201,7 +201,7 @@ loop do
   play_game(hands, totals, deck)
 
   game_over(totals)
-  break if play_again == 'n'
+  break unless play_again?
 end
 
 display_goodbye
