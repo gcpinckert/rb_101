@@ -38,11 +38,11 @@ def initialize_hand!(deck)
   hand
 end
 
-def display_cards(player_cards, dealer_cards)
+def display_cards(hands)
   clear_screen
-  prompt_pause "Dealer has: #{dealer_cards.sample} and an unknown card."
-  prompt_pause "You have: #{joinor(player_cards, ', ', 'and')}"
-  prompt_pause "Your current total is #{calculate_hand_total(player_cards)}"
+  prompt_pause "Dealer has: #{hands[:dealer].sample} and an unknown card."
+  prompt_pause "You have: #{joinor(hands[:player], ', ', 'and')}"
+  prompt_pause "Your current total is #{calculate_hand_total(hands[:player])}"
 end
 
 def joinor(array, punctuation = ', ', conjunction = 'or')
@@ -90,19 +90,19 @@ def valid_hit_or_stay
   answer
 end
 
-def players_turn!(player_cards, dealer_cards, deck)
+def players_turn!(hands, deck)
   loop do
     prompt_pause "What would you like to do?"
     prompt_pause "Enter 'h' to hit or 's' to stay."
     answer = valid_hit_or_stay
     break if answer == 's'
-    player_cards << deal_single_card!(deck)
-    break if busted?(player_cards)
-    display_cards(player_cards, dealer_cards)
+    hands[:player] << deal_single_card!(deck)
+    break if busted?(hands[:player])
+    display_cards(hands)
   end
 
-  if busted?(player_cards)
-    prompt_pause "Game Over"
+  if busted?(hands[:player])
+    prompt_pause "PLAYER BUSTS!"
   else
     prompt_pause "You chose to stay."
   end
@@ -114,37 +114,41 @@ def dealers_turn!(cards, deck)
     cards << deal_single_card!(deck)
   end
 
-  prompt_pause "Game Over. You win!" if busted?(cards)
+  prompt_pause "DEALER BUSTS!" if busted?(cards)
 end
 
-def play_game(player_hand, dealer_hand, deck)
-  display_cards(player_hand, dealer_hand)
+def play_game(hands, deck)
+  display_cards(hands)
 
-  players_turn!(player_hand, dealer_hand, deck)
-  dealers_turn!(dealer_hand, deck) unless busted?(player_hand)
+  players_turn!(hands, deck)
+  dealers_turn!(hands[:dealer], deck) unless busted?(hands[:player])
 end
 
-def compare_cards(player, dealer)
+def compare_cards(hands)
   case
-  when busted?(player) then "Dealer"
-  when busted?(dealer) then "Player"
-  when calculate_hand_total(player) > calculate_hand_total(dealer)
+  when busted?(hands[:player]) then "Dealer"
+  when busted?(hands[:dealer]) then "Player"
+  when calculate_hand_total(hands[:player]) > calculate_hand_total(hands[:dealer])
     "Player"
-  when calculate_hand_total(dealer) > calculate_hand_total(player)
+  when calculate_hand_total(hands[:dealer]) > calculate_hand_total(hands[:player])
     "Dealer"
   else "It's a tie!"
   end
 end
 
-def display_winner(player, dealer, winner)
-  prompt_pause "Player had #{calculate_hand_total(player)} points."
-  prompt_pause "Dealer had #{calculate_hand_total(dealer)} points."
-  prompt_pause "#{winner} won!"
+def display_winner(hands, winner)
+  prompt_pause "Player had #{calculate_hand_total(hands[:player])} points."
+  prompt_pause "Dealer had #{calculate_hand_total(hands[:dealer])} points."
+  if winner == "It's a tie!"
+    prompt_pause winner
+  else
+    prompt_pause "#{winner} won!"
+  end
 end
 
-def game_over(player, dealer)
-  winner = compare_cards(player, dealer)
-  display_winner(player, dealer, winner)
+def game_over(hands)
+  winner = compare_cards(hands)
+  display_winner(hands, winner)
 end
 
 def play_again
@@ -163,11 +167,10 @@ display_welcome
 
 loop do
   deck = initialize_deck
-  player_hand = initialize_hand!(deck)
-  dealer_hand = initialize_hand!(deck)
+  hands = { player: initialize_hand!(deck), dealer: initialize_hand!(deck)}
 
-  play_game(player_hand, dealer_hand, deck)
+  play_game(hands, deck)
 
-  game_over(player_hand, dealer_hand)
+  game_over(hands)
   break if play_again == 'n'
 end
