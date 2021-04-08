@@ -40,7 +40,7 @@ end
 
 def display_cards(hands)
   clear_screen
-  prompt_pause "Dealer has: #{hands[:dealer].sample} and an unknown card."
+  prompt_pause "Dealer has: #{hands[:dealer][0]} and an unknown card."
   prompt_pause "You have: #{joinor(hands[:player], ', ', 'and')}"
   prompt_pause "Your current total is #{calculate_hand_total(hands[:player])}"
 end
@@ -60,13 +60,13 @@ def calculate_hand_total(cards)
   sum = 0
 
   cards.each do |_, value|
-    if value == 'A'
-      sum += 11
-    elsif value.to_i == 0
-      sum += 10
-    else
-      sum += value.to_i
-    end
+    sum += if value == 'A'
+             11
+           elsif value.to_i == 0
+             10
+           else
+             value.to_i
+           end
   end
 
   sum = correct_for_aces(cards, sum)
@@ -122,7 +122,7 @@ def dealers_turn!(cards, deck)
   end
 
   if busted?(cards)
-    prompt_pause "DEALER BUSTS!" 
+    prompt_pause "DEALER BUSTS!"
   else
     prompt_pause "Dealer stays."
   end
@@ -136,12 +136,16 @@ def play_game(hands, deck)
 end
 
 def game_result(hands)
-  case
-  when busted?(hands[:player]) then "Player busted. Dealer wins!"
-  when busted?(hands[:dealer]) then "Dealer busted. You win!"
-  when calculate_hand_total(hands[:player]) > calculate_hand_total(hands[:dealer])
+  dealer_total = calculate_hand_total(hands[:dealer])
+  player_total = calculate_hand_total(hands[:player])
+
+  if player_total > 21
+    "Player busted. Dealer wins!"
+  elsif dealer_total > 21
+    "Dealer busted. You win!"
+  elsif player_total > dealer_total
     "Player has more points. You win!"
-  when calculate_hand_total(hands[:dealer]) > calculate_hand_total(hands[:player])
+  elsif dealer_total > player_total
     "Dealer has more points. Dealer wins!"
   else "It's a tie!"
   end
@@ -179,7 +183,7 @@ display_welcome
 
 loop do
   deck = initialize_deck
-  hands = { player: initialize_hand!(deck), dealer: initialize_hand!(deck)}
+  hands = { player: initialize_hand!(deck), dealer: initialize_hand!(deck) }
 
   play_game(hands, deck)
 
