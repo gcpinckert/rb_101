@@ -82,8 +82,11 @@ def busted?(hand_total)
   hand_total > 21
 end
 
-def valid_hit_or_stay
+def hit_or_stay?
   answer = nil
+
+  prompt_pause "What would you like to do?"
+  prompt_pause "Enter 'h' to hit or 's' to stay."
 
   loop do
     answer = gets.chomp.downcase.strip
@@ -91,21 +94,21 @@ def valid_hit_or_stay
     prompt_pause "Invalid input. Please enter 'h' or 's'."
   end
 
-  answer
+  answer == 's'
 end
 
 def players_turn!(hands, totals, deck)
   loop do
-    prompt_pause "What would you like to do?"
-    prompt_pause "Enter 'h' to hit or 's' to stay."
-    answer = valid_hit_or_stay
-    break if answer == 's'
+    break if hit_or_stay?
+
     card = deal_single_card!(deck)
     prompt_pause "Player got #{card}."
     hands[:player] << card
+
     totals[:player] = calculate_hand_total(hands[:player])
+    prompt_pause "Your new total is #{totals[:player]}."
+
     break if busted?(totals[:player])
-    display_cards(hands, totals)
   end
 
   if busted?(totals[:player])
@@ -159,7 +162,10 @@ def compare_cards(totals)
 end
 
 def display_winner(totals, result)
-  compare_cards(totals) unless busted?(totals[:player]) || busted?(totals[:dealer])
+  unless busted?(totals[:player]) || busted?(totals[:dealer])
+    compare_cards(totals)
+  end
+
   prompt_pause result
 end
 
@@ -180,12 +186,16 @@ def play_again
   answer
 end
 
+def display_goodbye
+  prompt_pause "Thank you for playing Twenty One! Goodbye!"
+end
+
 display_welcome
 
 loop do
   deck = initialize_deck
   hands = { player: initialize_hand!(deck), dealer: initialize_hand!(deck) }
-  totals = { player: calculate_hand_total(hands[:player]), 
+  totals = { player: calculate_hand_total(hands[:player]),
              dealer: calculate_hand_total(hands[:dealer]) }
 
   play_game(hands, totals, deck)
@@ -193,3 +203,5 @@ loop do
   game_over(totals)
   break if play_again == 'n'
 end
+
+display_goodbye
