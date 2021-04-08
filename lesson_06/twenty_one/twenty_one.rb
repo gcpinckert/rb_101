@@ -38,11 +38,11 @@ def initialize_hand!(deck)
   hand
 end
 
-def display_cards(hands)
+def display_cards(hands, totals)
   clear_screen
   prompt_pause "Dealer has: #{hands[:dealer][0]} and an unknown card."
   prompt_pause "You have: #{joinor(hands[:player], ', ', 'and')}"
-  prompt_pause "Your current total is #{calculate_hand_total(hands[:player])}"
+  prompt_pause "Your current total is #{totals[:player]}"
 end
 
 def joinor(array, punctuation = ', ', conjunction = 'or')
@@ -78,8 +78,8 @@ def correct_for_aces(cards, sum)
   sum
 end
 
-def busted?(cards)
-  calculate_hand_total(cards) > 21
+def busted?(hand_total)
+  hand_total > 21
 end
 
 def valid_hit_or_stay
@@ -94,77 +94,78 @@ def valid_hit_or_stay
   answer
 end
 
-def players_turn!(hands, deck)
+def players_turn!(hands, totals, deck)
   loop do
     prompt_pause "What would you like to do?"
     prompt_pause "Enter 'h' to hit or 's' to stay."
     answer = valid_hit_or_stay
     break if answer == 's'
-    hands[:player] << deal_single_card!(deck)
-    break if busted?(hands[:player])
-    display_cards(hands)
+    card = deal_single_card!(deck)
+    prompt_pause "Player got #{card}."
+    hands[:player] << card
+    totals[:player] = calculate_hand_total(hands[:player])
+    break if busted?(totals[:player])
+    display_cards(hands, totals)
   end
 
-  if busted?(hands[:player])
+  if busted?(totals[:player])
     prompt_pause "PLAYER BUSTS!"
   else
     prompt_pause "You chose to stay."
   end
 end
 
-def dealers_turn!(cards, deck)
+def dealers_turn!(cards, totals, deck)
   loop do
-    break if calculate_hand_total(cards) >= 17
+    break if totals[:dealer] >= 17
     prompt_pause "Dealer hits."
     card = deal_single_card!(deck)
     cards << card
     prompt_pause "Dealer gets #{card}."
+    totals[:dealer] = calculate_hand_total(cards)
   end
 
-  if busted?(cards)
+  if busted?(totals[:dealer])
     prompt_pause "DEALER BUSTS!"
   else
     prompt_pause "Dealer stays."
   end
 end
 
-def play_game(hands, deck)
-  display_cards(hands)
+def play_game(hands, totals, deck)
+  display_cards(hands, totals)
 
-  players_turn!(hands, deck)
-  dealers_turn!(hands[:dealer], deck) unless busted?(hands[:player])
+  players_turn!(hands, totals, deck)
+  dealers_turn!(hands[:dealer], totals, deck) unless busted?(totals[:player])
 end
 
-def game_result(hands)
-  dealer_total = calculate_hand_total(hands[:dealer])
-  player_total = calculate_hand_total(hands[:player])
-
-  if player_total > 21
+def game_result(totals)
+  if totals[:player] > 21
     "Player busted. Dealer wins!"
-  elsif dealer_total > 21
+  elsif totals[:dealer] > 21
     "Dealer busted. You win!"
-  elsif player_total > dealer_total
+  elsif totals[:player] > totals[:dealer]
     "Player has more points. You win!"
-  elsif dealer_total > player_total
+  elsif totals[:dealer] > totals[:player]
     "Dealer has more points. Dealer wins!"
   else "It's a tie!"
   end
 end
 
-def compare_cards(hands)
+def compare_cards(totals)
   prompt_pause "Both players have stayed."
-  prompt_pause "Player has #{calculate_hand_total(hands[:player])} points."
-  prompt_pause "Dealer has #{calculate_hand_total(hands[:dealer])} points."
+  prompt_pause "Player has #{totals[:player]} points."
+  prompt_pause "Dealer has #{totals[:dealer]} points."
 end
 
-def display_winner(hands, result)
-  compare_cards(hands) unless busted?(hands[:player]) || busted?(hands[:dealer])
+def display_winner(totals, result)
+  compare_cards(totals) unless busted?(totals[:player]) || busted?(totals[:dealer])
   prompt_pause result
 end
 
-def game_over(hands)
-  result = game_result(hands)
-  display_winner(hands, result)
+def game_over(totals)
+  result = game_result(totals)
+  display_winner(totals, result)
 end
 
 def play_again
@@ -184,9 +185,11 @@ display_welcome
 loop do
   deck = initialize_deck
   hands = { player: initialize_hand!(deck), dealer: initialize_hand!(deck) }
+  totals = { player: calculate_hand_total(hands[:player]), 
+             dealer: calculate_hand_total(hands[:dealer]) }
 
-  play_game(hands, deck)
+  play_game(hands, totals, deck)
 
-  game_over(hands)
+  game_over(totals)
   break if play_again == 'n'
 end
