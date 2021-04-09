@@ -1,4 +1,6 @@
 ROUNDS_TO_WIN = 5
+DEALER_STAYS = 17
+POINTS_UPPER_LIMIT = 21
 
 def prompt_pause(msg, time=1)
   puts "=> #{msg}"
@@ -11,14 +13,16 @@ end
 
 def display_welcome
   clear_screen
-  prompt_pause "Welcome to Twenty One!"
-  prompt_pause "Get as close to 21 points as possible, without going over."
+  prompt_pause "Welcome to #{POINTS_UPPER_LIMIT}!"
+  prompt_pause "Get as close to #{POINTS_UPPER_LIMIT} points as possible, " \
+               "without going over."
   prompt_pause "Cards 2-10 are each worth their face value."
   prompt_pause "Jacks, Queens, and Kings are all worth 10."
   prompt_pause "An Ace can be worth either 11 or 1."
   prompt_pause "Tell the dealer 'hit' to get another card, or choose 'stay'" \
                " to try your luck with what you've got."
-  prompt_pause "If you go over 21 points, you 'bust' and the dealer wins!"
+  prompt_pause "If you go over #{POINTS_UPPER_LIMIT} points, you 'bust' and" \
+               " the dealer wins!"
   prompt_pause "The first player to win #{ROUNDS_TO_WIN} games wins the " \
                "tournament!"
   prompt_pause "Good luck!", 4
@@ -79,12 +83,15 @@ def calculate_hand_total(cards)
 end
 
 def correct_for_aces(cards, sum)
-  cards.count { |_, value| value == 'A' }.times { sum -= 10 if sum > 21 }
+  cards.count { |_, value| value == 'A' }.times do
+    sum -= 10 if sum > POINTS_UPPER_LIMIT
+  end
+
   sum
 end
 
 def busted?(hand_total)
-  hand_total > 21
+  hand_total > POINTS_UPPER_LIMIT
 end
 
 def hit_or_stay?
@@ -125,7 +132,7 @@ end
 
 def dealers_turn!(cards, totals, deck)
   loop do
-    break if totals[:dealer] >= 17
+    break if totals[:dealer] >= DEALER_STAYS
     prompt_pause "Dealer hits."
     card = deal_single_card!(deck)
     cards << card
@@ -148,10 +155,10 @@ def play_single_round(hands, totals, deck, score)
 end
 
 def game_result!(totals, score)
-  if totals[:player] > 21
+  if totals[:player] > POINTS_UPPER_LIMIT
     score[:dealer] += 1
     "Player busted. Dealer wins!"
-  elsif totals[:dealer] > 21
+  elsif totals[:dealer] > POINTS_UPPER_LIMIT
     score[:player] += 1
     "Dealer busted. You win!"
   elsif totals[:player] > totals[:dealer]
@@ -206,7 +213,7 @@ def display_tournament_winner(score)
 end
 
 def display_goodbye
-  prompt_pause "Thank you for playing Twenty One! Goodbye!"
+  prompt_pause "Thank you for playing #{POINTS_UPPER_LIMIT}! Goodbye!"
 end
 
 display_welcome
