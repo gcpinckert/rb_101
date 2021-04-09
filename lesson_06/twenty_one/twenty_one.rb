@@ -18,22 +18,31 @@ def clear_screen
   system 'clear'
 end
 
+# rubocop:disable Metrics/MethodLength
 def display_welcome
   clear_screen
   prompt_pause "Welcome to #{POINTS_UPPER_LIMIT}!"
   prompt_pause "Get as close to #{POINTS_UPPER_LIMIT} points as possible, " \
                "without going over."
+  puts ""
   prompt_pause "Cards 2-10 are each worth their face value."
   prompt_pause "Jacks, Queens, and Kings are all worth 10."
   prompt_pause "An Ace can be worth either 11 or 1."
+  puts ""
   prompt_pause "Tell the dealer 'hit' to get another card, or choose 'stay'" \
                " to try your luck with what you've got."
   prompt_pause "If you go over #{POINTS_UPPER_LIMIT} points, you 'bust' and" \
                " the dealer wins!"
   prompt_pause "The first player to win #{ROUNDS_TO_WIN} games wins the " \
-               "tournament!"
-  prompt_pause "Good luck!", 4
+               "tournament! Good luck!"
+  puts ""
+  prompt_pause "Shuffling cards..."
+  5.times do
+    print ". "
+    sleep 1
+  end
 end
+# rubocop:enable Metrics/MethodLength
 
 # ----- shuffling and dealing logic -----
 def initialize_deck
