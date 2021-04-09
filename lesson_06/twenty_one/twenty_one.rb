@@ -1,3 +1,5 @@
+ROUNDS_TO_WIN = 5
+
 def prompt_pause(msg, time=1)
   puts "=> #{msg}"
   sleep(time)
@@ -15,9 +17,11 @@ def display_welcome
   prompt_pause "Jacks, Queens, and Kings are all worth 10."
   prompt_pause "An Ace can be worth either 11 or 1."
   prompt_pause "Tell the dealer 'hit' to get another card, or choose 'stay'" \
-         " to try your luck with what you've got."
+               " to try your luck with what you've got."
   prompt_pause "If you go over 21 points, you 'bust' and the dealer wins!"
-  prompt_pause "Good luck!"
+  prompt_pause "The first player to win #{ROUNDS_TO_WIN} games wins the " \
+               "tournament!"
+  prompt_pause "Good luck!", 4
 end
 
 def initialize_deck
@@ -38,8 +42,9 @@ def initialize_hand!(deck)
   hand
 end
 
-def display_cards(hands, totals)
+def display_cards(hands, totals, score)
   clear_screen
+  prompt_pause "SCORE You: #{score[:player]} Dealer: #{score[:dealer]}"
   prompt_pause "Dealer has: #{hands[:dealer][0]} and an unknown card."
   prompt_pause "You have: #{joinor(hands[:player], ', ', 'and')}"
   prompt_pause "Your current total is #{totals[:player]}"
@@ -85,7 +90,7 @@ end
 def hit_or_stay?
   answer = nil
 
-  prompt_pause "What would you like to do?"
+  prompt_pause "What would you like to do?", 0
   prompt_pause "Enter 'h' to hit or 's' to stay."
 
   loop do
@@ -135,21 +140,25 @@ def dealers_turn!(cards, totals, deck)
   end
 end
 
-def play_game(hands, totals, deck)
-  display_cards(hands, totals)
+def play_single_round(hands, totals, deck, score)
+  display_cards(hands, totals, score)
 
   players_turn!(hands, totals, deck)
   dealers_turn!(hands[:dealer], totals, deck) unless busted?(totals[:player])
 end
 
-def game_result(totals)
+def game_result!(totals, score)
   if totals[:player] > 21
+    score[:dealer] += 1
     "Player busted. Dealer wins!"
   elsif totals[:dealer] > 21
+    score[:player] += 1
     "Dealer busted. You win!"
   elsif totals[:player] > totals[:dealer]
+    score[:player] += 1
     "Player has more points. You win!"
   elsif totals[:dealer] > totals[:player]
+    score[:dealer] += 1
     "Dealer has more points. Dealer wins!"
   else "It's a tie!"
   end
@@ -169,8 +178,8 @@ def display_winner(totals, result)
   prompt_pause result
 end
 
-def game_over(totals)
-  result = game_result(totals)
+def game_over(totals, score)
+  result = game_result!(totals, score)
   display_winner(totals, result)
 end
 
@@ -186,6 +195,16 @@ def play_again?
   answer == 'y'
 end
 
+def display_tournament_winner(score)
+  if score[:player] > score[:dealer]
+    prompt_pause "You've won the tournament! Congratulations!"
+    prompt_pause "Next stop... VEGAS!"
+  else
+    prompt_pause "Aww, the dealer has beat you this time."
+    prompt_pause "You know what they say, the house always wins!"
+  end
+end
+
 def display_goodbye
   prompt_pause "Thank you for playing Twenty One! Goodbye!"
 end
@@ -193,14 +212,22 @@ end
 display_welcome
 
 loop do
-  deck = initialize_deck
-  hands = { player: initialize_hand!(deck), dealer: initialize_hand!(deck) }
-  totals = { player: calculate_hand_total(hands[:player]),
-             dealer: calculate_hand_total(hands[:dealer]) }
+  score = { player: 0, dealer: 0 }
 
-  play_game(hands, totals, deck)
+  loop do
+    deck = initialize_deck
+    hands = { player: initialize_hand!(deck), dealer: initialize_hand!(deck) }
+    totals = { player: calculate_hand_total(hands[:player]),
+               dealer: calculate_hand_total(hands[:dealer]) }
 
-  game_over(totals)
+    play_single_round(hands, totals, deck, score)
+
+    game_over(totals, score)
+    break if score.values.include?(ROUNDS_TO_WIN)
+  end
+
+  display_tournament_winner(score)
+
   break unless play_again?
 end
 
