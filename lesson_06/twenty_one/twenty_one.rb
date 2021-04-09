@@ -288,6 +288,11 @@ def display_goodbye
   prompt_pause "Thank you for playing #{POINTS_UPPER_LIMIT}! Goodbye!"
 end
 
+def quit_game
+  display_goodbye
+  exit
+end
+
 display_welcome
 
 loop do
@@ -302,8 +307,8 @@ loop do
     play_single_round(hands, totals, deck, score)
 
     game_over(totals, score, hands)
-    break if score.values.include?(ROUNDS_TO_WIN) ||
-             !play_again?("keep playing")
+    break if score.values.include?(ROUNDS_TO_WIN)
+    quit_game unless play_again?("keep playing")
   end
 
   display_tournament_winner(score)
