@@ -64,19 +64,19 @@ def suit_symbol(card)
   end
 end
 
+# rubocop:disable Metrics/AbcSize, Metrics/MethodLength
 def make_seen_card(lines, card)
   s = suit_symbol(card)
   v = card[1]
 
+  lines[0] << " _________ "
   if v == '10'
-    lines[0] << " _________ "
     lines[1] << "#{v}        |"
     lines[2] << "|         |"
     lines[3] << "|    #{s}    |"
     lines[4] << "|         |"
     lines[5] << "|________#{v}"
   else
-    lines[0] << " _________ "
     lines[1] << "|#{v}        |"
     lines[2] << "|         |"
     lines[3] << "|    #{s}    |"
@@ -84,6 +84,7 @@ def make_seen_card(lines, card)
     lines[5] << "|________#{v}|"
   end
 end
+# rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
 def make_hidden_card(lines)
   lines[0] << HIDDEN_CARD[0]
@@ -131,6 +132,7 @@ def display_cards(hands, totals, score)
   prompt_pause "Your current total is #{totals[:player]}.", 0
 end
 
+# ----- game play logic -----
 def calculate_hand_total(cards)
   sum = 0
 
@@ -300,8 +302,8 @@ loop do
     play_single_round(hands, totals, deck, score)
 
     game_over(totals, score, hands)
-    break if score.values.include?(ROUNDS_TO_WIN) || 
-            !play_again?("keep playing")
+    break if score.values.include?(ROUNDS_TO_WIN) ||
+             !play_again?("keep playing")
   end
 
   display_tournament_winner(score)
