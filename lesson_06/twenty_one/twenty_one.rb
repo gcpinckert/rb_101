@@ -2,6 +2,13 @@ ROUNDS_TO_WIN = 5
 DEALER_STAYS = 17
 POINTS_UPPER_LIMIT = 21
 
+HIDDEN_CARD = [" _________ ",
+               "|\\\\\\\\\\\\\\\\\\|",
+               "|/////////|",
+               "|\\\\\\\\\\\\\\\\\\|",
+               "|/////////|",
+               "|\\\\\\\\\\\\\\\\\\|"]
+
 def prompt_pause(msg, time=1)
   puts "=> #{msg}"
   sleep(time)
@@ -28,6 +35,7 @@ def display_welcome
   prompt_pause "Good luck!", 4
 end
 
+# ----- shuffling and dealing logic -----
 def initialize_deck
   new_deck = {}
   %w(H D C S).each { |suit| new_deck[suit] = %w(2 3 4 5 6 7 8 9 10 J Q K A) }
@@ -46,23 +54,81 @@ def initialize_hand!(deck)
   hand
 end
 
-def display_cards(hands, totals, score)
-  clear_screen
-  prompt_pause "SCORE You: #{score[:player]} Dealer: #{score[:dealer]}"
-  prompt_pause "Dealer has: #{hands[:dealer][0]} and an unknown card."
-  prompt_pause "You have: #{joinor(hands[:player], ', ', 'and')}"
-  prompt_pause "Your current total is #{totals[:player]}"
+# ----- card display logic -----
+def suit_symbol(card)
+  case card[0]
+  when 'C' then "\u2663"
+  when 'S' then "\u2660"
+  when 'H' then "\u2665"
+  when 'D' then "\u2666"
+  end
 end
 
-def joinor(array, punctuation = ', ', conjunction = 'or')
-  case array.length
-  when 0 then ''
-  when 1 then array[0].to_s
-  when 2 then "#{array[0]} #{conjunction} #{array[1]}"
+def make_seen_card(lines, card)
+  s = suit_symbol(card)
+  v = card[1]
+
+  if v == '10'
+    lines[0] << " _________ "
+    lines[1] << "#{v}        |"
+    lines[2] << "|         |"
+    lines[3] << "|    #{s}    |"
+    lines[4] << "|         |"
+    lines[5] << "|________#{v}"
   else
-    array[0..-2].join(punctuation) +
-      "#{punctuation}#{conjunction} #{array[-1]}"
+    lines[0] << " _________ "
+    lines[1] << "|#{v}        |"
+    lines[2] << "|         |"
+    lines[3] << "|    #{s}    |"
+    lines[4] << "|         |"
+    lines[5] << "|________#{v}|"
   end
+end
+
+def make_hidden_card(lines)
+  lines[0] << HIDDEN_CARD[0]
+  lines[1] << HIDDEN_CARD[1]
+  lines[2] << HIDDEN_CARD[2]
+  lines[3] << HIDDEN_CARD[3]
+  lines[4] << HIDDEN_CARD[4]
+  lines[5] << HIDDEN_CARD[5]
+end
+
+def display_dealer_cards(hand)
+  lines = [[], [], [], [], [], []]
+
+  hand.each_with_index do |card, index|
+    if index == 0
+      make_hidden_card(lines)
+    else
+      make_seen_card(lines, card)
+    end
+  end
+
+  lines.each { |line| puts line.join("  ") }
+end
+
+def display_player_cards(hand)
+  lines = [[], [], [], [], [], []]
+
+  hand.each do |card|
+    make_seen_card(lines, card)
+  end
+
+  lines.each { |line| puts line.join("  ") }
+end
+
+def display_cards(hands, totals, score)
+  clear_screen
+  prompt_pause "SCORE You: #{score[:player]} Dealer: #{score[:dealer]}", 0
+  puts ""
+  puts "======== DEALER ========"
+  display_dealer_cards(hands[:dealer])
+  puts ""
+  puts "======== PLAYER ========"
+  display_player_cards(hands[:player])
+  puts ""
+  prompt_pause "Your current total is #{totals[:player]}.", 0
 end
 
 def calculate_hand_total(cards)
@@ -109,39 +175,36 @@ def hit_or_stay?
   answer == 's'
 end
 
-def players_turn!(hands, totals, deck)
+def players_turn!(hands, totals, deck, score)
   loop do
     break if hit_or_stay?
 
-    card = deal_single_card!(deck)
-    prompt_pause "Player got #{card}."
-    hands[:player] << card
-
+    hands[:player] << deal_single_card!(deck)
     totals[:player] = calculate_hand_total(hands[:player])
-    prompt_pause "Your new total is #{totals[:player]}."
+    display_cards(hands, totals, score)
 
     break if busted?(totals[:player])
   end
 
   if busted?(totals[:player])
-    prompt_pause "PLAYER BUSTS!"
+    prompt_pause "PLAYER BUSTS!", 2
   else
     prompt_pause "You chose to stay."
   end
 end
 
-def dealers_turn!(cards, totals, deck)
+def dealers_turn!(hands, totals, deck, score)
   loop do
     break if totals[:dealer] >= DEALER_STAYS
     prompt_pause "Dealer hits."
     card = deal_single_card!(deck)
-    cards << card
-    prompt_pause "Dealer gets #{card}."
-    totals[:dealer] = calculate_hand_total(cards)
+    hands[:dealer] << card
+    totals[:dealer] = calculate_hand_total(hands[:dealer])
+    display_cards(hands, totals, score)
   end
 
   if busted?(totals[:dealer])
-    prompt_pause "DEALER BUSTS!"
+    prompt_pause "DEALER BUSTS!", 2
   else
     prompt_pause "Dealer stays."
   end
@@ -150,8 +213,8 @@ end
 def play_single_round(hands, totals, deck, score)
   display_cards(hands, totals, score)
 
-  players_turn!(hands, totals, deck)
-  dealers_turn!(hands[:dealer], totals, deck) unless busted?(totals[:player])
+  players_turn!(hands, totals, deck, score)
+  dealers_turn!(hands, totals, deck, score) unless busted?(totals[:player])
 end
 
 def game_result!(totals, score)
@@ -171,29 +234,36 @@ def game_result!(totals, score)
   end
 end
 
-def compare_cards(totals)
+def compare_cards(totals, hands)
   prompt_pause "Both players have stayed."
-  prompt_pause "Player has #{totals[:player]} points."
-  prompt_pause "Dealer has #{totals[:dealer]} points."
+  puts ""
+  puts "======== DEALER ========"
+  display_player_cards(hands[:dealer])
+  puts ""
+  puts "======== PLAYER ========"
+  display_player_cards(hands[:player])
+  puts ""
+  prompt_pause "Dealer has #{totals[:dealer]}."
+  prompt_pause "You have #{totals[:player]}."
 end
 
-def display_winner(totals, result)
+def display_winner(totals, result, hands)
   unless busted?(totals[:player]) || busted?(totals[:dealer])
-    compare_cards(totals)
+    compare_cards(totals, hands)
   end
 
-  prompt_pause result
+  prompt_pause result, 2
 end
 
-def game_over(totals, score)
+def game_over(totals, score, hands)
   result = game_result!(totals, score)
-  display_winner(totals, result)
+  display_winner(totals, result, hands)
 end
 
-def play_again?
+def play_again?(message)
   answer = nil
   loop do
-    prompt_pause "Would you like to play again? ('y' or 'n')"
+    prompt_pause "Would you like to #{message}? ('y' or 'n')"
     answer = gets.chomp.downcase.strip
     break if %w(y n).include?(answer)
     prompt_pause "Invalid input. Please enter 'y' or 'n'."
@@ -229,13 +299,14 @@ loop do
 
     play_single_round(hands, totals, deck, score)
 
-    game_over(totals, score)
-    break if score.values.include?(ROUNDS_TO_WIN)
+    game_over(totals, score, hands)
+    break if score.values.include?(ROUNDS_TO_WIN) || 
+            !play_again?("keep playing")
   end
 
   display_tournament_winner(score)
 
-  break unless play_again?
+  break unless play_again?("play another tournament")
 end
 
 display_goodbye
