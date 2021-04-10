@@ -344,11 +344,6 @@ loop do
     deck = initialize_deck
     deal_person_in!(game_data, :player, deck)
     deal_person_in!(game_data, :dealer, deck)
-    game_data[:player][:hand] = initialize_hand!(deck)
-    game_data[:player][:total] = calculate_total(game_data[:player][:hand])
-
-    game_data[:dealer][:hand] = initialize_hand!(deck)
-    game_data[:dealer][:total] = calculate_total(game_data[:dealer][:hand])
 
     play_single_round(game_data, deck)
 
