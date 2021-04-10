@@ -37,7 +37,7 @@ def display_welcome
                "tournament! Good luck!"
   puts ""
   prompt_pause "Shuffling cards..."
-  5.times do
+  8.times do
     print ". "
     sleep 1
   end
@@ -128,21 +128,29 @@ def display_player_cards(hand)
   lines.each { |line| puts line.join("  ") }
 end
 
-def display_cards(hands, totals, score)
+# rubocop:disable Metrics/AbcSize
+def display_cards(game_data)
   clear_screen
-  prompt_pause "SCORE You: #{score[:player]} Dealer: #{score[:dealer]}", 0
+  prompt_pause "SCORE You: #{game_data[:player][:score]} " \
+               "Dealer: #{game_data[:dealer][:score]}", 0
   puts ""
   puts "======== DEALER ========"
-  display_dealer_cards(hands[:dealer])
+  display_dealer_cards(game_data[:dealer][:hand])
   puts ""
   puts "======== PLAYER ========"
-  display_player_cards(hands[:player])
+  display_player_cards(game_data[:player][:hand])
   puts ""
-  prompt_pause "Your current total is #{totals[:player]}.", 0
+  prompt_pause "Your current total is #{game_data[:player][:total]}.", 0
 end
+# rubocop:enable Metrics/AbcSize
 
 # ----- game play logic -----
-def calculate_hand_total(cards)
+def deal_person_in!(game_data, person, deck)
+  game_data[person][:hand] = initialize_hand!(deck)
+  game_data[person][:total] = calculate_total(game_data[person][:hand])
+end
+
+def calculate_total(cards)
   sum = 0
 
   cards.each do |_, value|
@@ -171,7 +179,7 @@ def busted?(hand_total)
   hand_total > POINTS_UPPER_LIMIT
 end
 
-def hit_or_stay?
+def stay?
   answer = nil
 
   prompt_pause "What would you like to do?", 0
@@ -186,89 +194,109 @@ def hit_or_stay?
   answer == 's'
 end
 
-def players_turn!(hands, totals, deck, score)
+def hit!(game_data, person, deck)
+  game_data[person][:hand] << deal_single_card!(deck)
+  game_data[person][:total] = calculate_total(game_data[person][:hand])
+end
+
+def players_turn!(game_data, deck)
   loop do
-    break if hit_or_stay?
+    break if stay?
 
-    hands[:player] << deal_single_card!(deck)
-    totals[:player] = calculate_hand_total(hands[:player])
-    display_cards(hands, totals, score)
+    hit!(game_data, :player, deck)
+    display_cards(game_data)
 
-    break if busted?(totals[:player])
+    break if busted?(game_data[:player][:total])
   end
 
-  if busted?(totals[:player])
+  if busted?(game_data[:player][:total])
     prompt_pause "PLAYER BUSTS!", 2
   else
     prompt_pause "You chose to stay."
   end
 end
 
-def dealers_turn!(hands, totals, deck, score)
+def dealers_turn!(game_data, deck)
   loop do
-    break if totals[:dealer] >= DEALER_STAYS
+    break if game_data[:dealer][:total] >= DEALER_STAYS
     prompt_pause "Dealer hits."
-    card = deal_single_card!(deck)
-    hands[:dealer] << card
-    totals[:dealer] = calculate_hand_total(hands[:dealer])
-    display_cards(hands, totals, score)
+
+    hit!(game_data, :dealer, deck)
+    display_cards(game_data)
   end
 
-  if busted?(totals[:dealer])
+  if busted?(game_data[:dealer][:total])
     prompt_pause "DEALER BUSTS!", 2
   else
     prompt_pause "Dealer stays."
   end
 end
 
-def play_single_round(hands, totals, deck, score)
-  display_cards(hands, totals, score)
+def play_single_round(game_data, deck)
+  display_cards(game_data)
 
-  players_turn!(hands, totals, deck, score)
-  dealers_turn!(hands, totals, deck, score) unless busted?(totals[:player])
+  players_turn!(game_data, deck)
+  dealers_turn!(game_data, deck) unless busted?(game_data[:player][:total])
 end
 
-def game_result!(totals, score)
-  if totals[:player] > POINTS_UPPER_LIMIT
-    score[:dealer] += 1
-    "Player busted. Dealer wins!"
-  elsif totals[:dealer] > POINTS_UPPER_LIMIT
-    score[:player] += 1
-    "Dealer busted. You win!"
-  elsif totals[:player] > totals[:dealer]
-    score[:player] += 1
-    "Player has more points. You win!"
-  elsif totals[:dealer] > totals[:player]
-    score[:dealer] += 1
-    "Dealer has more points. Dealer wins!"
-  else "It's a tie!"
+def game_result(game_data)
+  if game_data[:player][:total] > POINTS_UPPER_LIMIT
+    :player_busted
+  elsif game_data[:dealer][:total] > POINTS_UPPER_LIMIT
+    :dealer_busted
+  elsif game_data[:player][:total] > game_data[:dealer][:total]
+    :player
+  elsif game_data[:dealer][:total] > game_data[:player][:total]
+    :dealer
+  else
+    :tie
   end
 end
 
-def compare_cards(totals, hands)
+def increase_score!(game_data, winner)
+  if winner == :player_busted || winner == :dealer
+    game_data[:dealer][:score] += 1
+  elsif winner == :dealer_busted || winner == :player
+    game_data[:player][:score] += 1
+  end
+end
+
+def compare_cards(game_data)
   prompt_pause "Both players have stayed."
   puts ""
   puts "======== DEALER ========"
-  display_player_cards(hands[:dealer])
+  display_player_cards(game_data[:dealer][:hand])
   puts ""
   puts "======== PLAYER ========"
-  display_player_cards(hands[:player])
+  display_player_cards(game_data[:player][:hand])
   puts ""
-  prompt_pause "Dealer has #{totals[:dealer]}."
-  prompt_pause "You have #{totals[:player]}."
+  prompt_pause "Dealer has #{game_data[:dealer][:total]}."
+  prompt_pause "You have #{game_data[:player][:total]}."
 end
 
-def display_winner(totals, result, hands)
-  unless busted?(totals[:player]) || busted?(totals[:dealer])
-    compare_cards(totals, hands)
+def winning_message(winner)
+  case winner
+  when :player_busted then "Player busted. Dealer wins!"
+  when :dealer_busted then "Dealer busted. You win!"
+  when :player        then "Player has more points. You win!"
+  when :dealer        then "Dealer has more points. Dealer wins!"
+  when :tie           then "It's a tie!"
+  end
+end
+
+def display_winner(game_data, winner)
+  unless busted?(game_data[:player][:total]) ||
+         busted?(game_data[:dealer][:total])
+    compare_cards(game_data)
   end
 
-  prompt_pause result, 2
+  prompt_pause winning_message(winner), 2
 end
 
-def game_over(totals, score, hands)
-  result = game_result!(totals, score)
-  display_winner(totals, result, hands)
+def game_over(game_data)
+  winner = game_result(game_data)
+  increase_score!(game_data, winner)
+  display_winner(game_data, winner)
 end
 
 def play_again?(message)
@@ -283,8 +311,8 @@ def play_again?(message)
   answer == 'y'
 end
 
-def display_tournament_winner(score)
-  if score[:player] > score[:dealer]
+def display_tournament_winner(game_data)
+  if game_data[:player][:score] > game_data[:dealer][:score]
     prompt_pause "You've won the tournament! Congratulations!"
     prompt_pause "Next stop... VEGAS!"
   else
@@ -305,22 +333,31 @@ end
 display_welcome
 
 loop do
-  score = { player: 0, dealer: 0 }
+  game_data = { player: { hand: nil,
+                          total: nil,
+                          score: 0 },
+                dealer: { hand: nil,
+                          total: nil,
+                          score: 0 } }
 
   loop do
     deck = initialize_deck
-    hands = { player: initialize_hand!(deck), dealer: initialize_hand!(deck) }
-    totals = { player: calculate_hand_total(hands[:player]),
-               dealer: calculate_hand_total(hands[:dealer]) }
+    deal_person_in!(game_data, :player, deck)
+    deal_person_in!(game_data, :dealer, deck)
+    game_data[:player][:hand] = initialize_hand!(deck)
+    game_data[:player][:total] = calculate_total(game_data[:player][:hand])
 
-    play_single_round(hands, totals, deck, score)
+    game_data[:dealer][:hand] = initialize_hand!(deck)
+    game_data[:dealer][:total] = calculate_total(game_data[:dealer][:hand])
 
-    game_over(totals, score, hands)
-    break if score.values.include?(ROUNDS_TO_WIN)
+    play_single_round(game_data, deck)
+
+    game_over(game_data)
+    break if game_data.values.any? { |val| val[:score] >= ROUNDS_TO_WIN }
     quit_game unless play_again?("keep playing")
   end
 
-  display_tournament_winner(score)
+  display_tournament_winner(game_data)
 
   break unless play_again?("play another tournament")
 end
