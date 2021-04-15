@@ -18,29 +18,47 @@ def clear_screen
   system 'clear'
 end
 
+def display_empty_line
+  puts ""
+end
+
+def ready_to_play
+  loop do
+    prompt_pause "Press Enter to continue"
+    answer = gets.chomp
+    break if answer == ''
+    prompt_pause "Sorry, that's invalid input."
+  end
+end
+
+def display_loading_animation
+  3.times do
+    print ". "
+    sleep 1
+  end
+end
+
 # rubocop:disable Metrics/MethodLength
 def display_welcome
   clear_screen
   prompt_pause "Welcome to #{POINTS_UPPER_LIMIT}!"
   prompt_pause "Get as close to #{POINTS_UPPER_LIMIT} points as possible, " \
                "without going over."
-  puts ""
+  display_empty_line
   prompt_pause "Cards 2-10 are each worth their face value."
   prompt_pause "Jacks, Queens, and Kings are all worth 10."
   prompt_pause "An Ace can be worth either 11 or 1."
-  puts ""
+  display_empty_line
   prompt_pause "Tell the dealer 'hit' to get another card, or choose 'stay'" \
                " to try your luck with what you've got."
   prompt_pause "If you go over #{POINTS_UPPER_LIMIT} points, you 'bust' and" \
                " the dealer wins!"
   prompt_pause "The first player to win #{ROUNDS_TO_WIN} games wins the " \
                "tournament! Good luck!"
-  puts ""
+  display_empty_line
+  ready_to_play
   prompt_pause "Shuffling cards..."
-  8.times do
-    print ". "
-    sleep 1
-  end
+  display_loading_animation
 end
 # rubocop:enable Metrics/MethodLength
 
@@ -133,13 +151,13 @@ def display_cards(game_data)
   clear_screen
   prompt_pause "SCORE You: #{game_data[:player][:score]} " \
                "Dealer: #{game_data[:dealer][:score]}", 0
-  puts ""
+  display_empty_line
   puts "======== DEALER ========"
   display_dealer_cards(game_data[:dealer][:hand])
-  puts ""
+  display_empty_line
   puts "======== PLAYER ========"
   display_player_cards(game_data[:player][:hand])
-  puts ""
+  display_empty_line
   prompt_pause "Your current total is #{game_data[:player][:total]}.", 0
 end
 # rubocop:enable Metrics/AbcSize
@@ -263,13 +281,13 @@ end
 
 def compare_cards(game_data)
   prompt_pause "Both players have stayed."
-  puts ""
+  display_empty_line
   puts "======== DEALER ========"
   display_player_cards(game_data[:dealer][:hand])
-  puts ""
+  display_empty_line
   puts "======== PLAYER ========"
   display_player_cards(game_data[:player][:hand])
-  puts ""
+  display_empty_line
   prompt_pause "Dealer has #{game_data[:dealer][:total]}."
   prompt_pause "You have #{game_data[:player][:total]}."
 end
