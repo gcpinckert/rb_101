@@ -70,9 +70,10 @@ def initialize_deck
 end
 
 def deal_single_card!(deck)
-  suit = deck.keys.sample         # randomly select a suit
-  value = deck[suit].shuffle!.pop # randomly remove a card from that suit
-  [suit, value]
+  card = {}
+  card[:suit] = deck.keys.sample
+  card[:value] = deck[card[:suit]].shuffle!.pop
+  card
 end
 
 def initialize_hand!(deck)
@@ -83,7 +84,7 @@ end
 
 # ----- card display logic -----
 def suit_symbol(card)
-  case card[0]
+  case card[:suit]
   when 'C' then "\u2663"
   when 'S' then "\u2660"
   when 'H' then "\u2665"
@@ -94,7 +95,7 @@ end
 # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
 def make_seen_card(lines, card)
   s = suit_symbol(card)
-  v = card[1]
+  v = card[:value]
 
   lines[0] << " _________ "
   if v == '10'
@@ -171,13 +172,13 @@ end
 def calculate_total(cards)
   sum = 0
 
-  cards.each do |_, value|
-    sum += if value == 'A'
+  cards.each do |card|
+    sum += if card[:value] == 'A'
              11
-           elsif value.to_i == 0
+           elsif card[:value].to_i == 0
              10
            else
-             value.to_i
+             card[:value].to_i
            end
   end
 
@@ -186,7 +187,7 @@ def calculate_total(cards)
 end
 
 def correct_for_aces(cards, sum)
-  cards.count { |_, value| value == 'A' }.times do
+  cards.count { |card| card[:value] == 'A' }.times do
     sum -= 10 if sum > POINTS_UPPER_LIMIT
   end
 
