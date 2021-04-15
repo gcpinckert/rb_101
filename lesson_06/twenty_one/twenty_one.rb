@@ -217,7 +217,7 @@ def hit!(game_data, person, deck)
   game_data[person][:total] = calculate_total(game_data[person][:hand])
 end
 
-def players_turn!(game_data, deck)
+def players_turn(game_data, deck)
   loop do
     break if stay?
 
@@ -234,7 +234,7 @@ def players_turn!(game_data, deck)
   end
 end
 
-def dealers_turn!(game_data, deck)
+def dealers_turn(game_data, deck)
   loop do
     break if game_data[:dealer][:total] >= DEALER_STAYS
     prompt_pause "Dealer hits."
@@ -253,8 +253,8 @@ end
 def play_single_round(game_data, deck)
   display_cards(game_data)
 
-  players_turn!(game_data, deck)
-  dealers_turn!(game_data, deck) unless busted?(game_data[:player][:total])
+  players_turn(game_data, deck)
+  dealers_turn(game_data, deck) unless busted?(game_data[:player][:total])
 end
 
 def game_result(game_data)
@@ -279,7 +279,7 @@ def increase_score!(game_data, winner)
   end
 end
 
-def compare_cards(game_data)
+def display_card_comparison(game_data)
   prompt_pause "Both players have stayed."
   display_empty_line
   puts "======== DEALER ========"
@@ -305,7 +305,7 @@ end
 def display_winner(game_data, winner)
   unless busted?(game_data[:player][:total]) ||
          busted?(game_data[:dealer][:total])
-    compare_cards(game_data)
+    display_card_comparison(game_data)
   end
 
   prompt_pause winning_message(winner), 2
